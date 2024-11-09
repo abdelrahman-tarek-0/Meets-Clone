@@ -1,0 +1,24 @@
+{
+  "name": "taktu",
+  "version": "0.0.1",
+  "description": "app for chatting and video/audio calls",
+  "main": "./server/dist/index.js",
+  "scripts": {
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "format:client": "cd client && npm run format",
+    "format:server": "cd server && npm run format",
+    "format": " npm run format:client && npm run format:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "pre:build:server": "cp -r client/dist/* server/public/",
+    "build": "npm run build:client && npm run pre:build:server && npm run build:server",
+    "start": "node server/dist/index.js",
+    "force": "npm run build && npm start",
+    "v": "npm version",
+    "commit": "git add . && git commit -m"
+  },
+  "author": "https://github.com/abdelrahman-tarek-0",
+  "license": "MIT"
+}
