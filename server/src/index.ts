@@ -1,13 +1,10 @@
-import path from 'path'
-import { fileURLToPath } from 'url'
 import express, { Express, Request, Response } from 'express'
+import Paths from '@/utils/Paths.utils'
 
 const app: Express = express()
 const port = process.env.PORT || 8080
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-app.use(express.static(path.join(__dirname, '../public')))
+app.use(express.static(Paths.public()))
 
 app.get('/', (_req: Request, res: Response) => {
    res.send('Express + TypeScript Server')
