@@ -6,6 +6,8 @@ import cors from 'cors'
 
 import Paths from '@/utils/Paths.utils'
 
+import socketServer from '@/sockets/index.socket'
+
 const port = process.env.PORT || 8080
 const app = express()
 
@@ -20,6 +22,7 @@ const server = https.createServer(
 app.use(cors())
 app.use(express.static(Paths.public()))
 
+socketServer(server)
 server.listen(port, () => {
-   console.log(`[server]: Server is running at https://127.0.0.1:${port}`)
+   console.log(`[SERVER]: https://127.0.0.1:${port}`)
 })
