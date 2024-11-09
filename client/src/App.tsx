@@ -12,7 +12,7 @@ import {
    CardTitle, 
 } from '@/components/ui/card'
 import './App.css'
-import LoginCard from './components/LoginCard'
+import LoginCard from '@/components/LoginCard'
 
 import { motion } from 'framer-motion'
 
