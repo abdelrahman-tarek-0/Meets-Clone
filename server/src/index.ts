@@ -1,15 +1,25 @@
-import express, { Express, Request, Response } from 'express'
+import fs from 'fs'
+import https from 'https'
+
+import express from 'express'
+import cors from 'cors'
+
 import Paths from '@/utils/Paths.utils'
 
-const app: Express = express()
 const port = process.env.PORT || 8080
+const app = express()
 
+const server = https.createServer(
+   {
+      cert: fs.readFileSync(Paths.root('ssl.dev', 'cert.pem')),
+      key: fs.readFileSync(Paths.root('ssl.dev', 'key.pem')),
+   },
+   app
+)
+
+app.use(cors())
 app.use(express.static(Paths.public()))
 
-app.get('/', (_req: Request, res: Response) => {
-   res.send('Express + TypeScript Server')
-})
-
-app.listen(port, () => {
-   console.log(`[server]: Server is running at http://localhost:${port}`)
+server.listen(port, () => {
+   console.log(`[server]: Server is running at https://127.0.0.1:${port}`)
 })
