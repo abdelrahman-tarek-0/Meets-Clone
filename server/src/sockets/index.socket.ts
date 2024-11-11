@@ -3,7 +3,7 @@ import { Server } from 'socket.io'
 import type { Server as HttpsServer } from 'https'
 import type { Server as HttpServer } from 'https'
 
-import webRTCController from '@/sockets/webRTC.socket.controller'
+import webRTCController from './webRTC.socket.controller.js'
 
 type User = { id: string; name: string }
 
