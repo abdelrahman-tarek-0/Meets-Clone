@@ -10,6 +10,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+import LiveLogo from '/images/WhiteLiveLogo.gif?url'
+
 export default function LoginCard({
    name,
    setName,
@@ -26,7 +28,25 @@ export default function LoginCard({
    return (
       <Card className="w-[350px]">
          <CardHeader>
-            <CardTitle>Join Chat Room</CardTitle>
+            <CardTitle style={{
+               display: "flex",
+               alignItems: "center",
+               justifyContent: "center",
+            }}>
+               Join Chat Room
+               <img src={LiveLogo} alt="Live" style={{
+                  width: "30px",
+                  height: "30px",
+                  marginLeft: "10px",
+                  marginBottom: "-5px",
+                  // backgroundColor: "white"
+                  // backgroundColor: "white",
+                  pointerEvents: "none",
+                  // stop image selection
+                  userSelect: "none",
+                  
+               }}  className=''/>
+            </CardTitle>
             <CardDescription>
                Enter your name and room id to join the chat room
             </CardDescription>
