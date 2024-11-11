@@ -6,10 +6,12 @@
    "type": "module",
    "scripts": {
       "v": "npm version",
-      "build": "tsc",
+      "build": "tsc && npm run post:build",
+      "post:build": "cp -r  public ./dist/ && cp -r ssl.dev ./dist/",
       "dev": "nodemon --exec tsx ./src/index.ts",
       "lint": "eslint --fix .",
-      "format": "prettier --write . && npm run lint"
+      "format": "prettier --write . && npm run lint",
+      "start": "node ./dist/src/index.js"
    },
    "keywords": [],
    "author": "",
