@@ -1,5 +1,5 @@
 import { randomID } from '../src/utils/general.utils.js'
-import User from './User.model.js'
+import type User from './User.model.js'
 
 class Room {
    id: string
