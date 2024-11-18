@@ -23,7 +23,6 @@ function App() {
    const [submitted, setSubmitted] = useState(false)
    const [loading, setLoading] = useState(false)
 
-   console.log(import.meta.env.BASE_URL)
    const root = window.document.documentElement
    root.classList.remove('light', 'dark')
    root.classList.add('dark')
