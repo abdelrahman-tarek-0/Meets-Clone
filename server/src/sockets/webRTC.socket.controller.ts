@@ -1,12 +1,17 @@
-import type { Socket } from "socket.io"
+import type { Socket, Server } from 'socket.io'
 
-export default (socket: Socket) => {
-    socket.on('signal', (data) => {
-        console.log('[SOCKET]: Sending', 'from', socket.id, 'to', data.to)
-    
-        socket.to(data.to).emit('signal', {
-            from: socket.id,
-            signal: data.signal,
-        })
-    })
+export default (socket: Socket, io: Server) => {
+   socket.on('call', (data) => {
+      io.to(data?.user).emit('call', {
+         caller: socket.id,
+         signal: data.signal,
+      })
+   })
+
+   socket.on('answer', (data) => {
+      io.to(data?.user).emit('answer', {
+         answerID: socket.id,
+         signal: data.signal,
+      })
+   })
 }
