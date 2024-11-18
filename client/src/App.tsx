@@ -7,25 +7,23 @@ import { toast } from 'sonner'
 import { motion } from 'framer-motion'
 
 import { Toaster } from '@/components/ui/sonner'
-import { Button } from '@/components/ui/button'
-import {
-   Card,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from '@/components/ui/card'
+
 import LoginCard from '@/components/LoginCard'
+import Room from '@/components/Room'
+
 import Loader from '@/components/Loader'
 
 import useSocketConnection from './hooks/useSocketConnection'
+
+import type User from '@/types/User.type'
 
 function App() {
    const [roomID, setRoomID] = useLocalStorage('last-room-id', '')
    const [name, setName] = useLocalStorage('client-name', '')
    const [submitted, setSubmitted] = useState(false)
    const [loading, setLoading] = useState(false)
+   const [users, setUsers] = useState<User[]>([])
+
    const { socket, error } = useSocketConnection({
       setLoading,
       submitted,
@@ -41,14 +39,26 @@ function App() {
       socket.emit('join-room', roomID)
 
       socket.on('room-users', (users) => {
-         console.log(users)
          setLoading(false)
+         setUsers(users)
       })
+
+      socket.on('user-connected', (user) => {
+         setUsers((prev) => [...prev, user])
+      })
+
+      socket.on('user-disconnected', (user) => {
+         setUsers((prev) => prev.filter((u) => u.id !== user.id))
+      })
+
+      return () => {
+         socket.emit('leave-room', roomID)
+      }
    }, [socket])
 
    useEffect(() => {
       if (!error) return
-      toast.error(error)
+      if (error !== 'Disconnected') toast.error(error)
       setSubmitted(false)
    }, [error])
 
@@ -70,35 +80,7 @@ function App() {
 
          {submitted && !loading && socket && (
             <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
-               <Card className="w-[350px]">
-                  <CardHeader>
-                     <CardTitle>Chat Room</CardTitle>
-                     <CardDescription>
-                        You have successfully joined the chat room
-                     </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                     <div className="flex flex-col space-y-2">
-                        <div className="flex justify-between items-center">
-                           <p className="font-semibold">Room ID</p>
-                           <p className="text-gray-600">{roomID}</p>
-                        </div>
-                        <div className="flex justify-between items-center">
-                           <p className="font-semibold">Name</p>
-                           <p className="text-gray-600">{name}</p>
-                        </div>
-                     </div>
-                  </CardContent>
-                  <CardFooter className="flex justify-between">
-                     <Button
-                        onClick={() => {
-                           setSubmitted(false)
-                        }}
-                     >
-                        Leave
-                     </Button>
-                  </CardFooter>
-               </Card>
+               <Room roomID={roomID} name={name} setSubmitted={setSubmitted} />
             </motion.div>
          )}
          <Toaster />
