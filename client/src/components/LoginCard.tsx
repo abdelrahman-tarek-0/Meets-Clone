@@ -87,11 +87,6 @@ export default function LoginCard({
             <Button
                onClick={() => {
                   setSubmitted(true)
-                  // setLoading(true)
-                  // setTimeout(() => {
-                  //    setLoading(false)
-                  //    setSubmitted(true)
-                  // }, 2000) // fake api delay
                }}
             >
                Enter
