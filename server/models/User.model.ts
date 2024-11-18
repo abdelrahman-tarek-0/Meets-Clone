@@ -1,16 +1,15 @@
 import type { Socket } from 'socket.io'
-import { randomID } from '../src/utils/general.utils.js'
 
-type UserWithoutId = Omit<User, 'id' | 'update' | 'toJson'>
-type updateUser = Partial<Omit<UserWithoutId, 'socket'>>
+export type UserType = Omit<User, 'update' | 'toJson'>
+type updateUser = Partial<Omit<UserType, 'socket'>>
 
 class User {
    id: string
    name: string
    socket: Socket
 
-   constructor(user: UserWithoutId) {
-      this.id = randomID()
+   constructor(user: UserType) {
+      this.id = user.id
       this.name = user.name
       this.socket = user.socket
    }

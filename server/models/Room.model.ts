@@ -1,12 +1,11 @@
-import { randomID } from '../src/utils/general.utils.js'
 import type User from './User.model.js'
 
 class Room {
    id: string
    users: User[]
 
-   constructor() {
-      this.id = randomID()
+   constructor(id: string) {
+      this.id = id 
       this.users = []
    }
 
