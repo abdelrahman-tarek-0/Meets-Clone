@@ -1,9 +1,9 @@
-import type { Instance } from 'simple-peer'
+import type { ExtendedPeer } from '@/utils/createWebRtcConnection';
 
 type User = {
    id: string
    name: string
-   peer?: Instance
+   peer?: ExtendedPeer
    isConnected?: boolean
    stream?: MediaStream
 }

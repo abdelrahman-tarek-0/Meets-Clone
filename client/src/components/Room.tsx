@@ -1,4 +1,3 @@
-
 import {
    Card,
    CardContent,
@@ -20,6 +19,8 @@ type RoomProps = {
    users: User[]
    socket: Socket | null
    localStream: MediaStream | undefined
+   // streamConstraints: MediaStreamConstraints
+   // setStreamConstraints: (streamConstraints: MediaStreamConstraints) => void
 }
 
 export default function Room({
@@ -29,8 +30,9 @@ export default function Room({
    users,
    socket,
    localStream,
+   // streamConstraints,
+   // setStreamConstraints,
 }: RoomProps) {
-
    return (
       <div className="flex flex-col items-center justify-center w-full">
          <Card className="w-full">
@@ -53,7 +55,9 @@ export default function Room({
                            name={user.name}
                            isConnected={user.isConnected}
                            isMe={user.id === socket?.id}
-                           stream={user.id === socket?.id ? localStream : user.stream}
+                           stream={
+                              user.id === socket?.id ? localStream : user.stream
+                           }
                         />
                      ))}
                </div>
@@ -66,6 +70,28 @@ export default function Room({
                >
                   Leave Room
                </Button>
+
+               {/* <Button
+                  onClick={() => {
+                     setStreamConstraints({
+                        ...streamConstraints,
+                        video: !streamConstraints.video,
+                     })
+                  }}
+               >
+                  {streamConstraints.video ? 'Disable Video' : 'Enable Video'}
+               </Button>
+
+               <Button
+                  onClick={() => {
+                     setStreamConstraints({
+                        ...streamConstraints,
+                        audio: !streamConstraints.audio,
+                     })
+                  }}
+               >
+                  {streamConstraints.audio ? 'Disable Audio' : 'Enable Audio'}
+               </Button> */}
             </CardFooter>
          </Card>
       </div>

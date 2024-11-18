@@ -1,4 +1,8 @@
-import type { SimplePeer as Peer } from 'simple-peer'
+import type { Instance as PeerInstance, SimplePeer as Peer } from 'simple-peer'
+
+export interface ExtendedPeer extends PeerInstance {
+   id?: number
+}
 
 const SimplePeer = (window as unknown as any)?.SimplePeer as Peer
 
@@ -21,7 +25,7 @@ export default function createWebRtcConnection({
    initiator = true,
    stream,
 }: WebRtcConnection) {
-   const peer = new SimplePeer({
+   const peer: ExtendedPeer = new SimplePeer({
       initiator,
       trickle: true,
       stream: stream || undefined,
@@ -37,5 +41,6 @@ export default function createWebRtcConnection({
 
    peer.on('stream', onStream)
 
+   peer.id = Math.floor(Math.random() * 1000)
    return peer
 }

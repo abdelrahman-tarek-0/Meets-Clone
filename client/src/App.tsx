@@ -81,16 +81,20 @@ function App() {
                   )
                },
                onClose: () => {
-                  console.log('[CLOSED]', user.id, peer.connected)
+                  console.log('[CLOSED]', user.id, peer.connected, peer?.id)
 
-                  // updateUsers(
-                  //    users.map((u) => {
-                  //       if (u.id === user.id) {
-                  //          return { ...u, peer: undefined, isConnected: false }
-                  //       }
-                  //       return u
-                  //    })
-                  // )
+                  const connectedUser = users.find((u) => u.id === user.id)
+                  // If the peer is not the same as the connected user's peer, return
+                  if (connectedUser?.peer?.id !== peer.id) return
+
+                  updateUsers(
+                     users.map((u) => {
+                        if (u.id === user.id) {
+                           return { ...u, peer: undefined, isConnected: false }
+                        }
+                        return u
+                     })
+                  )
                },
                onData: (data) => {
                   console.log('Data received', data)
@@ -134,14 +138,7 @@ function App() {
             },
             onConnect: () => {
                console.log('[CONNECTED]', caller)
-               // setUsers((prev) =>
-               //    prev.map((u) => {
-               //       if (u.id === caller) {
-               //          return { ...u, isConnected: true }
-               //       }
-               //       return u
-               //    })
-               // )
+
                updateUsers(
                   users.map((u) => {
                      if (u.id === caller) {
@@ -152,38 +149,25 @@ function App() {
                )
             },
             onClose: () => {
-               console.log('[CLOSED]', caller, peer.connected)
-               // setUsers((prev) =>
-               //    prev.map((u) => {
-               //       if (u.id === caller) {
-               //          return { ...u, peer: undefined, isConnected: false }
-               //       }
-               //       return u
-               //    })
-               // )
+               console.log('[CLOSED]', caller, peer.connected, peer?.id)
 
-               // updateUsers(
-               //    users.map((u) => {
-               //       if (u.id === caller) {
-               //          return { ...u, peer: undefined, isConnected: false }
-               //       }
-               //       return u
-               //    })
-               // )
+               const connectedUser = users.find((u) => u.id === caller)
+               if (connectedUser?.peer?.id !== peer.id) return
+
+               updateUsers(
+                  users.map((u) => {
+                     if (u.id === caller) {
+                        return { ...u, peer: undefined, isConnected: false }
+                     }
+                     return u
+                  })
+               )
             },
             onData: (data) => {
                console.log('Data received', data)
             },
             onStream: (stream) => {
                console.log('Stream received', stream)
-               // setUsers((prev) =>
-               //    prev.map((u) => {
-               //       if (u.id === caller) {
-               //          return { ...u, stream }
-               //       }
-               //       return u
-               //    })
-               // )
 
                updateUsers(
                   users.map((u) => {
@@ -276,6 +260,8 @@ function App() {
                />
             </motion.div>
          )}
+
+
          <Toaster />
       </main>
    )
