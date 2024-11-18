@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 
 import {
    Card,
@@ -52,7 +51,7 @@ export default function Room({
                            key={user.id}
                            id={user.id}
                            name={user.name}
-                           isConnected={false}
+                           isConnected={user.peer?.connected || false}
                            isMe={user.id === socket?.id}
                            stream={user.id === socket?.id ? localStream : null}
                         />
