@@ -14,11 +14,4 @@ export default (socket: Socket, io: Server) => {
          caller: socket.id,
       })
    })
-
-   // socket.on('answer', (data) => {
-   //    io.to(data?.user).emit('answer', {
-   //       answerID: socket.id,
-   //       signal: data.signal,
-   //    })
-   // })
 }
