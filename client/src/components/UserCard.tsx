@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import {  useEffect, useRef } from 'react'
 
 import {
    Card,
@@ -14,7 +14,7 @@ type UserCardProps = {
    id: string
    name: string
    isMe: boolean
-   isConnected: boolean
+   isConnected: boolean | null
    stream: MediaStream | null
 }
 export default function UserCard({
@@ -32,7 +32,9 @@ export default function UserCard({
         videoRef.current.srcObject = stream
     
         return () => {
-            videoRef.current!.srcObject = null
+            if (videoRef.current) {
+                videoRef.current.srcObject = null
+            }
         }
     })
     
