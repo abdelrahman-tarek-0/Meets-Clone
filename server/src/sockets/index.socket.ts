@@ -15,6 +15,20 @@ interface Socket extends BaseSocket {
 
 const rooms: { [key: string]: Room } = {}
 
+const logRoomsTable = () => {
+   console.clear()
+   console.table(
+      Object.values(rooms)
+         .map((room) => room.toJson())
+         .map((room) => {
+            return {
+               id: room.id,
+               users: room.users.map((user) => user.name),
+            }
+         })
+   )
+}
+
 export default (server: HttpsServer | HttpServer) => {
    const io = new Server(server, {
       cors: {
@@ -41,22 +55,25 @@ export default (server: HttpsServer | HttpServer) => {
 
       webRTCController(socket)
 
-      socket.on('join-room', (roomId: string, name: string) => {
+      socket.on('join-room', (roomId: string) => {
          if (!socket.user) return
 
-         const isInRoom = Array.from(socket.rooms).some(
-            (room) => room !== socket.id
-         )
-
-         if (!roomId || !name || isInRoom) return
          if (!rooms[roomId]) rooms[roomId] = new Room(roomId)
+
          rooms[roomId].addUser(socket.user)
 
          socket.join(roomId)
          socket.to(roomId).emit('user-connected', socket.user.toJson())
          socket.emit('room-users', rooms[roomId].toJson().users)
 
-         console.log(`[SOCKET]: ${name} joined room ${roomId}`)
+         console.log(socket.rooms)
+
+         // console.log(
+         //    `[SOCKET]: A user joined the room ${roomId}`,
+         //    socket.user.name
+         // )
+
+         logRoomsTable()
       })
 
       socket.on('leave-room', (roomId: string) => {
@@ -66,24 +83,30 @@ export default (server: HttpsServer | HttpServer) => {
          socket.to(roomId).emit('user-disconnected', socket.user.toJson())
 
          if (!rooms[roomId]) return
+
+         // console.log('[SOCKET]: A user left the room', socket.user.name)
          rooms[roomId].removeUserBySocket(socket.user.id)
+         logRoomsTable()
+      })
+
+      socket.on('disconnecting', () => {
+         socket.rooms.forEach((room) => {
+            if (room === socket.id || !socket.user || !rooms[room]) return
+
+            socket.to(room).emit('user-disconnected', socket.user.toJson())
+
+            // console.log(
+            //    `[SOCKET]: A user ${socket.user.name} left room ${room}`
+            // )
+            rooms[room].removeUserBySocket(socket.id)
+         })
+         logRoomsTable()
       })
 
       socket.on('disconnect', () => {
          if (!socket.user) return
 
-         console.log(
-            '[SOCKET]: A user disconnected',
-            socket.user.name,
-            socket.user.id
-         )
-
-         socket.rooms.forEach((room) => {
-            if (room === socket.id || !socket.user || !rooms[room]) return
-
-            socket.to(room).emit('user-disconnected', socket.user.toJson())
-            rooms[room].removeUserBySocket(socket.id)
-         })
+         console.log('[SOCKET]: A user disconnected', socket.user.name)
       })
    })
 }
