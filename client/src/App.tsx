@@ -80,7 +80,13 @@ function App() {
 
          {submitted && !loading && socket && (
             <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
-               <Room roomID={roomID} name={name} setSubmitted={setSubmitted} />
+               <Room
+                  roomID={roomID}
+                  name={name}
+                  setSubmitted={setSubmitted}
+                  users={users}
+                  socket={socket}
+               />
             </motion.div>
          )}
          <Toaster />
