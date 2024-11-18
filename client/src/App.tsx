@@ -5,7 +5,6 @@ import useLocalStorage from 'use-local-storage'
 
 import { motion } from 'framer-motion'
 
-import { Toaster } from '@/components/ui/toaster'
 import { Button } from '@/components/ui/button'
 import {
    Card,
@@ -18,7 +17,6 @@ import {
 import LoginCard from '@/components/LoginCard'
 import Loader from '@/components/Loader'
 
-import { useToast } from '@/hooks/use-toast'
 import useSocketConnection from './hooks/useSocketConnection'
 
 function App() {
@@ -26,7 +24,6 @@ function App() {
    const [name, setName] = useLocalStorage('client-name', '')
    const [submitted, setSubmitted] = useState(false)
    const [loading, setLoading] = useState(false)
-   const { toast } = useToast()
    const { socket, error } = useSocketConnection({
       setLoading,
       submitted,
@@ -49,11 +46,7 @@ function App() {
 
    useEffect(() => {
       if (!error) return
-      toast({
-         title: 'Error',
-         description: error,
-         variant: 'destructive',
-      })
+ 
       setSubmitted(false)
    }, [error])
 
@@ -106,7 +99,6 @@ function App() {
                </Card>
             </motion.div>
          )}
-         <Toaster />
       </main>
    )
 }
