@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import './App.css'
 
+import { useState, useEffect } from 'react'
 import useLocalStorage from 'use-local-storage'
+
+import { motion } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -9,17 +12,17 @@ import {
    CardDescription,
    CardFooter,
    CardHeader,
-   CardTitle, 
+   CardTitle,
 } from '@/components/ui/card'
-import './App.css'
 import LoginCard from '@/components/LoginCard'
-
-import { motion } from 'framer-motion'
+import Loader from './components/Loader'
 
 function App() {
    const [roomID, setRoomID] = useLocalStorage('last-room-id', '')
    const [name, setName] = useLocalStorage('client-name', '')
    const [submitted, setSubmitted] = useState(false)
+   const [loading, setLoading] = useState(false)
+
    console.log(import.meta.env.BASE_URL)
    const root = window.document.documentElement
    root.classList.remove('light', 'dark')
@@ -27,7 +30,7 @@ function App() {
 
    return (
       <main className="flex flex-col items-center justify-center min-h-screen">
-         {!submitted && (
+         {!submitted && !loading && (
             <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
                <LoginCard
                   name={name}
@@ -35,11 +38,14 @@ function App() {
                   roomID={roomID}
                   setRoomID={setRoomID}
                   setSubmitted={setSubmitted}
+                  setLoading={setLoading}
                />
             </motion.div>
          )}
 
-         {submitted && (
+         {loading && <Loader />}
+
+         {submitted && !loading && (
             <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
                <Card className="w-[350px]">
                   <CardHeader>

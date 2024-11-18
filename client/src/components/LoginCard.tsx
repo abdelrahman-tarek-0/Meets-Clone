@@ -12,40 +12,50 @@ import { Label } from '@/components/ui/label'
 
 import LiveLogo from '/images/WhiteLiveLogo.gif?url'
 
+interface LoginCardProps {
+   name: string
+   setName: (name: string) => void
+   roomID: string
+   setRoomID: (roomID: string) => void
+   setSubmitted: (submitted: boolean) => void
+   setLoading: (loading: boolean) => void
+}
+
 export default function LoginCard({
    name,
    setName,
    roomID,
    setRoomID,
    setSubmitted,
-}: {
-   name: string
-   setName: (name: string) => void
-   roomID: string
-   setRoomID: (roomID: string) => void
-   setSubmitted: (submitted: boolean) => void
-}) {
+   setLoading,
+}: LoginCardProps) {
    return (
       <Card className="w-[350px]">
          <CardHeader>
-            <CardTitle style={{
-               display: "flex",
-               alignItems: "center",
-               justifyContent: "center",
-            }}>
+            <CardTitle
+               style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+               }}
+            >
                Join Chat Room
-               <img src={LiveLogo} alt="Live" style={{
-                  width: "30px",
-                  height: "30px",
-                  marginLeft: "10px",
-                  marginBottom: "-5px",
-                  // backgroundColor: "white"
-                  // backgroundColor: "white",
-                  pointerEvents: "none",
-                  // stop image selection
-                  userSelect: "none",
-                  
-               }}  className=''/>
+               <img
+                  src={LiveLogo}
+                  alt="Live"
+                  style={{
+                     width: '30px',
+                     height: '30px',
+                     marginLeft: '10px',
+                     marginBottom: '-5px',
+                     // backgroundColor: "white"
+                     // backgroundColor: "white",
+                     pointerEvents: 'none',
+                     // stop image selection
+                     userSelect: 'none',
+                  }}
+                  className=""
+               />
             </CardTitle>
             <CardDescription>
                Enter your name and room id to join the chat room
@@ -78,7 +88,11 @@ export default function LoginCard({
          <CardFooter className="flex justify-between">
             <Button
                onClick={() => {
-                  setSubmitted(true)
+                  setLoading(true)
+                  setTimeout(() => {
+                     setLoading(false)
+                     setSubmitted(true)
+                  }, 2000) // fake api delay
                }}
             >
                Enter
