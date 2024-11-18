@@ -49,6 +49,7 @@ function useSocketConnection({
             console.log('[SOCKET]', 'disconnected')
             setLoading(false)
             setSocket(null)
+            setError('Disconnected')
          })
 
          return () => {
