@@ -18,6 +18,7 @@ import useSocketConnection from './hooks/useSocketConnection'
 import type User from '@/types/User.type'
 
 import createWebRtcConnection from './utils/createWebRtcConnection'
+import useMediaStream from '@/hooks/useMediaStream'
 
 function App() {
    const [roomID, setRoomID] = useLocalStorage('last-room-id', '')
@@ -25,6 +26,11 @@ function App() {
    const [submitted, setSubmitted] = useState(false)
    const [loading, setLoading] = useState(false)
    let [users, setUsers] = useState<User[]>([])
+
+   const [streamConstraints, setStreamConstraints] =
+      useState<MediaStreamConstraints>({ video: false, audio: false })
+
+   const localStream = useMediaStream(streamConstraints)
 
    const { socket, error } = useSocketConnection({
       setLoading,
@@ -53,9 +59,10 @@ function App() {
             if (user.id === socket.id) return
 
             const peer = createWebRtcConnection({
+               initiator: true,
+               stream: localStream,
                onSignal: (signal) => {
-                  console.log('[CALLING]', user.id)
-                  socket.emit('call', {
+                  socket.emit(signal.type === 'offer' ? 'call' : 'signal', {
                      user: user.id,
                      signal,
                   })
@@ -74,19 +81,30 @@ function App() {
                   )
                },
                onClose: () => {
-                  console.log('[CLOSED]', user.id)
+                  console.log('[CLOSED]', user.id, peer.connected)
 
+                  // updateUsers(
+                  //    users.map((u) => {
+                  //       if (u.id === user.id) {
+                  //          return { ...u, peer: undefined, isConnected: false }
+                  //       }
+                  //       return u
+                  //    })
+                  // )
+               },
+               onData: (data) => {
+                  console.log('Data received', data)
+               },
+               onStream: (stream) => {
+                  console.log('Stream received', stream)
                   updateUsers(
                      users.map((u) => {
                         if (u.id === user.id) {
-                           return { ...u, peer: undefined, isConnected: false }
+                           return { ...u, stream }
                         }
                         return u
                      })
                   )
-               },
-               onData: (data) => {
-                  console.log('Data received', data)
                },
             })
 
@@ -104,21 +122,28 @@ function App() {
       socket.on('call', ({ caller, signal }) => {
          const user = users.find((u) => u.id === caller)
          if (!user) return
-         console.log('[ANSWERING]', caller)
 
          const peer = createWebRtcConnection({
             initiator: false,
+            stream: localStream,
             onSignal: (signal) => {
-               console.log('[ACCEPTING]', caller)
-               socket.emit('answer', {
+               socket.emit('signal', {
                   user: caller,
                   signal,
                })
             },
             onConnect: () => {
                console.log('[CONNECTED]', caller)
-               setUsers((prev) =>
-                  prev.map((u) => {
+               // setUsers((prev) =>
+               //    prev.map((u) => {
+               //       if (u.id === caller) {
+               //          return { ...u, isConnected: true }
+               //       }
+               //       return u
+               //    })
+               // )
+               updateUsers(
+                  users.map((u) => {
                      if (u.id === caller) {
                         return { ...u, isConnected: true }
                      }
@@ -127,18 +152,47 @@ function App() {
                )
             },
             onClose: () => {
-               console.log('[CLOSED]', caller)
-               setUsers((prev) =>
-                  prev.map((u) => {
+               console.log('[CLOSED]', caller, peer.connected)
+               // setUsers((prev) =>
+               //    prev.map((u) => {
+               //       if (u.id === caller) {
+               //          return { ...u, peer: undefined, isConnected: false }
+               //       }
+               //       return u
+               //    })
+               // )
+
+               // updateUsers(
+               //    users.map((u) => {
+               //       if (u.id === caller) {
+               //          return { ...u, peer: undefined, isConnected: false }
+               //       }
+               //       return u
+               //    })
+               // )
+            },
+            onData: (data) => {
+               console.log('Data received', data)
+            },
+            onStream: (stream) => {
+               console.log('Stream received', stream)
+               // setUsers((prev) =>
+               //    prev.map((u) => {
+               //       if (u.id === caller) {
+               //          return { ...u, stream }
+               //       }
+               //       return u
+               //    })
+               // )
+
+               updateUsers(
+                  users.map((u) => {
                      if (u.id === caller) {
-                        return { ...u, peer: undefined, isConnected: false }
+                        return { ...u, stream }
                      }
                      return u
                   })
                )
-            },
-            onData: (data) => {
-               console.log('Data received', data)
             },
          })
 
@@ -154,11 +208,10 @@ function App() {
          )
       })
 
-      socket.on('answer', ({ answerID, signal }) => {
-         const user = users.find((u) => u.id === answerID)
+      socket.on('signal', ({ caller, signal }) => {
+         const user = users.find((u) => u.id === caller)
          if (!user) return
-         console.log('[ANSWERED]', answerID)
-         console.log(user.peer?.signal)
+         console.log('[SIGNAL]', caller)
          user.peer?.signal(signal)
       })
 
@@ -179,6 +232,11 @@ function App() {
 
       return () => {
          socket.emit('leave-room', roomID)
+         socket.off('room-users')
+         socket.off('call')
+         socket.off('signal')
+         socket.off('user-connected')
+         socket.off('user-disconnected')
       }
    }, [socket])
 
@@ -198,6 +256,8 @@ function App() {
                   roomID={roomID}
                   setRoomID={setRoomID}
                   setSubmitted={setSubmitted}
+                  streamConstraints={streamConstraints}
+                  setStreamConstraints={setStreamConstraints}
                />
             </motion.div>
          )}
@@ -211,6 +271,7 @@ function App() {
                   name={name}
                   setSubmitted={setSubmitted}
                   users={users}
+                  localStream={localStream}
                   socket={socket}
                />
             </motion.div>
