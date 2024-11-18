@@ -56,11 +56,8 @@ export default (server: HttpsServer | HttpServer) => {
       webRTCController(socket)
 
       socket.on('join-room', (roomId: string) => {
-         console.log('join-room', roomId)
-         if (!socket.user) return
-
+         if (!socket.user || !roomId) return socket.emit('error', 'Invalid username or room ID')
          if (!rooms[roomId]) rooms[roomId] = new Room(roomId)
-
          rooms[roomId].addUser(socket.user)
 
          socket.join(roomId)
