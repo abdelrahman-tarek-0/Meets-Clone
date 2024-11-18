@@ -5,6 +5,7 @@ type User = {
    name: string
    peer?: Instance
    isConnected?: boolean
+   stream?: MediaStream
 }
 
 export default User
