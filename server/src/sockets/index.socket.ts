@@ -6,8 +6,8 @@ import type { Server as HttpServer } from 'https'
 
 import webRTCController from './webRTC.socket.controller.js'
 
-import User from '../../models/User.model.js'
-import Room from '../../models/Room.model.js'
+import User from '../models/User.model.js'
+import Room from '../models/Room.model.js'
 
 interface Socket extends BaseSocket {
    user?: User
