@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button'
 import type { Socket } from 'socket.io-client'
 import type User from '@/types/User.type'
 import UserCard from '@/components/UserCard'
-import useMediaStream from '@/hooks/useMediaStream'
 
 type RoomProps = {
    roomID: string
@@ -20,6 +19,7 @@ type RoomProps = {
    setSubmitted: (submitted: boolean) => void
    users: User[]
    socket: Socket | null
+   localStream: MediaStream | undefined
 }
 
 export default function Room({
@@ -28,8 +28,8 @@ export default function Room({
    setSubmitted,
    users,
    socket,
+   localStream,
 }: RoomProps) {
-   const localStream = useMediaStream({ video: true, audio: true })
 
    return (
       <div className="flex flex-col items-center justify-center w-full">
@@ -51,9 +51,9 @@ export default function Room({
                            key={user.id}
                            id={user.id}
                            name={user.name}
-                           isConnected={user.peer?.connected || false}
+                           isConnected={user.isConnected}
                            isMe={user.id === socket?.id}
-                           stream={user.id === socket?.id ? localStream : null}
+                           stream={user.id === socket?.id ? localStream : user.stream}
                         />
                      ))}
                </div>
