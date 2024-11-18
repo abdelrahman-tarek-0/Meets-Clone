@@ -53,7 +53,7 @@ export default (server: HttpsServer | HttpServer) => {
          socket.user.id
       )
 
-      webRTCController(socket)
+      webRTCController(socket, io)
 
       socket.on('join-room', (roomId: string) => {
          if (!socket.user || !roomId) return socket.emit('error', 'Invalid username or room ID')
