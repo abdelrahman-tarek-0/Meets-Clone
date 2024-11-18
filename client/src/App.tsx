@@ -2,9 +2,11 @@ import './App.css'
 
 import { useState, useEffect } from 'react'
 import useLocalStorage from 'use-local-storage'
+import { toast } from 'sonner'
 
 import { motion } from 'framer-motion'
 
+import { Toaster } from '@/components/ui/sonner'
 import { Button } from '@/components/ui/button'
 import {
    Card,
@@ -46,7 +48,7 @@ function App() {
 
    useEffect(() => {
       if (!error) return
- 
+      toast.error(error)
       setSubmitted(false)
    }, [error])
 
@@ -99,6 +101,7 @@ function App() {
                </Card>
             </motion.div>
          )}
+         <Toaster />
       </main>
    )
 }
