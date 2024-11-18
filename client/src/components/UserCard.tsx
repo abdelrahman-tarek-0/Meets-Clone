@@ -1,4 +1,4 @@
-import {  useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 import {
    Card,
@@ -14,8 +14,8 @@ type UserCardProps = {
    id: string
    name: string
    isMe: boolean
-   isConnected: boolean | null
-   stream: MediaStream | null
+   isConnected?: boolean
+   stream?: MediaStream
 }
 export default function UserCard({
    id,
@@ -24,20 +24,20 @@ export default function UserCard({
    isMe,
    stream,
 }: UserCardProps) {
-    const videoRef = useRef<HTMLVideoElement>(null)
+   const mediaRef = useRef<HTMLVideoElement>(null)
 
-    useEffect(() => {
-        if (!videoRef.current || !stream) return
-    
-        videoRef.current.srcObject = stream
-    
-        return () => {
-            if (videoRef.current) {
-                videoRef.current.srcObject = null
-            }
-        }
-    })
-    
+   useEffect(() => {
+      if (!mediaRef.current || !stream) return
+
+      mediaRef.current.srcObject = stream
+
+      return () => {
+         if (mediaRef.current) {
+            mediaRef.current.srcObject = null
+         }
+      }
+   })
+
    return (
       <Card>
          <CardHeader>
@@ -46,18 +46,35 @@ export default function UserCard({
          </CardHeader>
          <CardContent>
             <div className="flex items-center justify-center">
-               <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted={isMe}
-                  style={{
-                     width: '200px',
-                     height: 'auto',
-                     borderRadius: '8px',
-                     maxWidth: '200px',
-                  }}
-               />
+               {stream && stream.getVideoTracks().length > 0 && (
+                  <video
+                     ref={mediaRef}
+                     autoPlay
+                     playsInline
+                     muted={isMe}
+                     style={{
+                        width: '200px',
+                        height: 'auto',
+                        borderRadius: '8px',
+                        maxWidth: '200px',
+                     }}
+                  />
+               )}
+               {stream &&
+                  stream.getAudioTracks().length > 0 &&
+                  stream.getVideoTracks().length === 0 && (
+                     <>
+                        <audio
+                           ref={mediaRef}
+                           autoPlay
+                           playsInline
+                           muted={isMe}
+                        />
+
+                        <Badge variant="secondary">Audio Only</Badge>
+                     </>
+                  )}
+               {!stream && <Badge variant="destructive">No Stream</Badge>}
             </div>
          </CardContent>
          <CardFooter>
