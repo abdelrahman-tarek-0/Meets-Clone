@@ -5,6 +5,7 @@ import useLocalStorage from 'use-local-storage'
 
 import { motion } from 'framer-motion'
 
+import { Toaster } from '@/components/ui/toaster'
 import { Button } from '@/components/ui/button'
 import {
    Card,
@@ -15,21 +16,50 @@ import {
    CardTitle,
 } from '@/components/ui/card'
 import LoginCard from '@/components/LoginCard'
-import Loader from './components/Loader'
+import Loader from '@/components/Loader'
+
+import { useToast } from '@/hooks/use-toast'
+import useSocketConnection from './hooks/useSocketConnection'
 
 function App() {
    const [roomID, setRoomID] = useLocalStorage('last-room-id', '')
    const [name, setName] = useLocalStorage('client-name', '')
    const [submitted, setSubmitted] = useState(false)
    const [loading, setLoading] = useState(false)
+   const { toast } = useToast()
+   const { socket, error } = useSocketConnection({
+      setLoading,
+      submitted,
+      name,
+   })
 
    const root = window.document.documentElement
    root.classList.remove('light', 'dark')
    root.classList.add('dark')
 
+   useEffect(() => {
+      if (!socket) return
+      socket.emit('join-room', roomID)
+
+      socket.on('room-users', (users) => {
+         console.log(users)
+         setLoading(false)
+      })
+   }, [socket])
+
+   useEffect(() => {
+      if (!error) return
+      toast({
+         title: 'Error',
+         description: error,
+         variant: 'destructive',
+      })
+      setSubmitted(false)
+   }, [error])
+
    return (
       <main className="flex flex-col items-center justify-center min-h-screen">
-         {!submitted && !loading && (
+         {!submitted && !socket && !loading && (
             <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
                <LoginCard
                   name={name}
@@ -37,14 +67,13 @@ function App() {
                   roomID={roomID}
                   setRoomID={setRoomID}
                   setSubmitted={setSubmitted}
-                  setLoading={setLoading}
                />
             </motion.div>
          )}
 
          {loading && <Loader />}
 
-         {submitted && !loading && (
+         {submitted && !loading && socket && (
             <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
                <Card className="w-[350px]">
                   <CardHeader>
@@ -77,6 +106,7 @@ function App() {
                </Card>
             </motion.div>
          )}
+         <Toaster />
       </main>
    )
 }

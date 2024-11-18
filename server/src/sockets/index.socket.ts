@@ -56,6 +56,7 @@ export default (server: HttpsServer | HttpServer) => {
       webRTCController(socket)
 
       socket.on('join-room', (roomId: string) => {
+         console.log('join-room', roomId)
          if (!socket.user) return
 
          if (!rooms[roomId]) rooms[roomId] = new Room(roomId)

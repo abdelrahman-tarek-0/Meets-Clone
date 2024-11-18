@@ -18,7 +18,6 @@ interface LoginCardProps {
    roomID: string
    setRoomID: (roomID: string) => void
    setSubmitted: (submitted: boolean) => void
-   setLoading: (loading: boolean) => void
 }
 
 export default function LoginCard({
@@ -27,7 +26,6 @@ export default function LoginCard({
    roomID,
    setRoomID,
    setSubmitted,
-   setLoading,
 }: LoginCardProps) {
    return (
       <Card className="w-[350px]">
@@ -88,11 +86,12 @@ export default function LoginCard({
          <CardFooter className="flex justify-between">
             <Button
                onClick={() => {
-                  setLoading(true)
-                  setTimeout(() => {
-                     setLoading(false)
-                     setSubmitted(true)
-                  }, 2000) // fake api delay
+                  setSubmitted(true)
+                  // setLoading(true)
+                  // setTimeout(() => {
+                  //    setLoading(false)
+                  //    setSubmitted(true)
+                  // }, 2000) // fake api delay
                }}
             >
                Enter
