@@ -7,7 +7,9 @@ type WebRtcConnection = {
    onConnect: () => void
    onClose: () => void
    onData: (data: any) => void
+   onStream: (stream: MediaStream) => void
    initiator?: boolean
+   stream?: MediaStream
 }
 
 export default function createWebRtcConnection({
@@ -15,9 +17,15 @@ export default function createWebRtcConnection({
    onConnect,
    onClose,
    onData,
+   onStream,
    initiator = true,
+   stream,
 }: WebRtcConnection) {
-   const peer = new SimplePeer({ initiator, trickle: false })
+   const peer = new SimplePeer({
+      initiator,
+      trickle: true,
+      stream: stream || undefined,
+   })
 
    peer.on('signal', onSignal)
 
@@ -26,6 +34,8 @@ export default function createWebRtcConnection({
    peer.on('close', onClose)
 
    peer.on('data', onData)
+
+   peer.on('stream', onStream)
 
    return peer
 }
