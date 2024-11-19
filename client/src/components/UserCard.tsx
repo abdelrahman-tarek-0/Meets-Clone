@@ -39,7 +39,6 @@ export default function UserCard({
    const [mute, setMute] = useState(false)
    const [muteVideo, setMuteVideo] = useState(false)
 
-   console.log(mute, muteVideo)
 
    useEffect(() => {
       if (!mediaRef.current || !stream) return
@@ -63,16 +62,6 @@ export default function UserCard({
          isMuted = true
       }
 
-      // if (!mute && !isAudioExists()) {
-      //    setMute(true)
-      //    isMuted = true
-      // } else if (mute && isAudioExists()) {
-      //    setMute(false)
-      //    isMuted = false
-      // } else {
-      //    isMuted = mute
-      // }
-
       stream.getAudioTracks().forEach((track) => {
          track.enabled = !isMuted
       })
@@ -89,38 +78,12 @@ export default function UserCard({
          isMuted = true
       }
 
-      // if (!muteVideo && !isVideoExists()) {
-      //    setMuteVideo(true)
-      //    isMuted = true
-      // } else if (muteVideo && isVideoExists()) {
-      //    setMuteVideo(false)
-      //    isMuted = false
-      // } else {
-      //    isMuted = muteVideo
-      // }
-
       stream.getVideoTracks().forEach((track) => {
          track.enabled = !isMuted
       })
    }, [muteVideo, stream])
 
-   // const isAudioMuted = () => {
-   //    return (
-   //       !stream ||
-   //       stream.getAudioTracks().every((track) => !track.enabled) ||
-   //       mute ||
-   //       !stream.getAudioTracks().length
-   //    )
-   // }
 
-   // const isVideoMuted = () => {
-   //    return (
-   //       !stream ||
-   //       stream.getVideoTracks().every((track) => !track.enabled) ||
-   //       muteVideo ||
-   //       !stream.getVideoTracks().length
-   //    )
-   // }
 
    return (
       <Card>
@@ -188,13 +151,6 @@ export default function UserCard({
                            }}
                            id={`${id}-audio`}
                            onCheckedChange={(e) => {
-                              // console.log('Mute Audio change', e.valueOf())
-                              // if (!isAudioExists()) {
-                              //    return setMute(true)
-                              // } else {
-                              //    setMute(e.valueOf() as boolean)
-                              // }
-
                               setMute(e.valueOf() as boolean)
                            }}
                         />
@@ -222,13 +178,6 @@ export default function UserCard({
                            }}
                            id={`${id}-video`}
                            onCheckedChange={(e) => {
-                              // console.log('Mute Video change', e.valueOf())
-                              // if (!isVideoExists()) {
-                              //    return setMuteVideo(true)
-                              // } else {
-                              //    setMuteVideo(e.valueOf() as boolean)
-                              // }
-
                               setMuteVideo(e.valueOf() as boolean)   
                            }}
                         />
