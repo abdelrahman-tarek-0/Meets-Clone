@@ -66,7 +66,7 @@ function App() {
                   id: connectionId,
                },
                () => {
-                  console.log('Calling', user.id)
+                  console.log('[CALL]', user.id, 'my local stream video tracks', localStream?.getVideoTracks(), 'my local stream audio tracks', localStream?.getAudioTracks())
 
                   const peer = webRTChandler({
                      connectionId,
@@ -100,6 +100,8 @@ function App() {
       socket.on('call', ({ caller, id }) => {
          const user = users.find((u) => u.id === caller)
          if (!user) return
+
+         console.log("[CALL]", caller, 'my local stream video tracks', localStream?.getVideoTracks(), 'my local stream audio tracks', localStream?.getAudioTracks())
 
          const peer = webRTChandler({
             connectionId: id,
