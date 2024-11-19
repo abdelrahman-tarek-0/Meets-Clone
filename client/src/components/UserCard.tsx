@@ -64,6 +64,7 @@ export default function UserCard({
       stream.getAudioTracks().forEach((track) => {
          track.enabled = !isMuted
       })
+
    }, [mute, stream])
 
    useEffect(() => {
@@ -84,30 +85,30 @@ export default function UserCard({
 
    return (
       <Card>
-         <CardHeader>
+         <CardHeader className="h-1/6">
             <CardTitle>{name}</CardTitle>
             <CardDescription>{id}</CardDescription>
          </CardHeader>
-         <div
-            className="flex  items-center justify-start flex-col h-full"
-         >
-            <CardContent className="h-4/6 flex flex-col justify-center items-start">
+         <div className="flex items-center justify-end flex-col h-5/6">
+            <CardContent className="flex flex-col justify-center items-start">
                <div className="flex items-center justify-center">
-                  {stream && stream.getVideoTracks().length > 0 && (
-                     <video
-                        ref={mediaRef}
-                        autoPlay
-                        playsInline
-                        muted={isMe}
-                        className='mt-2'
-                        style={{
-                           width: '100%',
-                           // height: 'auto',
-                           borderRadius: '8px',
-                        }}
-                     />
-                  )}
-                  {stream &&
+                  {stream && ( // stream && stream.getVideoTracks().length > 0 &&
+                        <video
+                           ref={mediaRef}
+                           autoPlay
+                           playsInline
+                           muted={isMe}
+                           className="
+                              mt-2 
+                              rounded-lg
+                              shadow-lg
+                              w-[300px]
+                              min-w-[300px]
+                              max-w-[300px]
+                           "
+                        />
+                     )}
+                  {/* {stream &&
                      stream.getAudioTracks().length > 0 &&
                      stream.getVideoTracks().length === 0 && (
                         <>
@@ -119,12 +120,12 @@ export default function UserCard({
                            />
                            <Badge variant="secondary">Audio Only</Badge>
                         </>
-                     )}
+                     )} */}
                   {!stream && <Badge variant="destructive">No Stream</Badge>}
                </div>
             </CardContent>
             <CardFooter>
-               <div className="flex flex-col items-center justify-between mt-4">
+               <div className="flex flex-col items-center justify-between">
                   <CardDescription>
                      {
                         <div className="flex items-center space-x-2">
