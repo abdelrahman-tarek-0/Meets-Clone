@@ -41,7 +41,7 @@ export default function Room({
                <CardDescription>Welcome, {name}!</CardDescription>
             </CardHeader>
             <CardContent>
-               <div className="grid lg:grid-cols-2 sm:grid-cols-1 gap-4">
+               <div className="grid lg:grid-cols-2 xl:grid-cols-3 sm:grid-cols-1 gap-4">
                   {users
                      .sort(
                         (a, b) =>
