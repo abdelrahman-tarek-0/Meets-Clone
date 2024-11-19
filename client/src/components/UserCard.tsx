@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import {
    Card,
@@ -9,6 +9,9 @@ import {
    CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+
+import { Mic, MicOff, Camera, CameraOff } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 
 type UserCardProps = {
    id: string
@@ -25,6 +28,8 @@ export default function UserCard({
    stream,
 }: UserCardProps) {
    const mediaRef = useRef<HTMLVideoElement>(null)
+   const [mute, setMute] = useState(false)
+   const [muteVideo, setMuteVide] = useState(false)
 
    useEffect(() => {
       if (!mediaRef.current || !stream) return
@@ -36,7 +41,21 @@ export default function UserCard({
             mediaRef.current.srcObject = null
          }
       }
-   })
+   }, [stream])
+
+   useEffect(() => {
+      if (!stream) return
+      stream.getAudioTracks().forEach((track) => {
+         track.enabled = !mute
+      })
+   }, [mute, stream])
+
+   useEffect(() => {
+      if (!stream) return
+      stream.getVideoTracks().forEach((track) => {
+         track.enabled = !muteVideo
+      })
+   }, [muteVideo, stream])
 
    return (
       <Card>
@@ -80,13 +99,60 @@ export default function UserCard({
          <CardFooter>
             <div className="flex items-center justify-between">
                <CardDescription>
-                  {isMe && <Badge variant="secondary">You</Badge>}
-                  {!isMe &&
-                     (isConnected ? (
-                        <Badge>Connected</Badge>
-                     ) : (
-                        <Badge variant="destructive">Not Connected</Badge>
-                     ))}
+                  {
+                     <div className="flex items-center space-x-2">
+                        {mute ? (
+                           <label htmlFor={`${id}-audio`} className="cursor-pointer">
+                              <MicOff />
+                           </label>
+                        ) : (
+                           <label htmlFor={`${id}-audio`} className="cursor-pointer">
+                              <Mic />
+                           </label>
+                        )}
+                        <Checkbox
+                           checked={mute}
+                           style={{
+                              visibility: 'hidden',
+                           }}
+                           id={`${id}-audio`}
+                           onCheckedChange={(e) => {
+                              console.log(e.valueOf())
+                              setMute(e.valueOf() as boolean)
+                           }}
+                        />
+
+                        {muteVideo ? (
+                           <label htmlFor={`${id}-video`}  className="cursor-pointer">
+                              <CameraOff />
+                           </label>
+                        ) : (
+                           <label htmlFor={`${id}-video`} className="cursor-pointer">
+                              <Camera />
+                           </label>
+                        )}
+
+                        <Checkbox
+                           checked={muteVideo}
+                           style={{
+                              visibility: 'hidden',
+                           }}
+                           id={`${id}-video`}
+                           onCheckedChange={(e) => {
+                              console.log(e.valueOf())
+                              setMuteVide(e.valueOf() as boolean)
+                           }}
+                        />
+
+                        {isMe && <Badge variant="secondary">You</Badge>}
+                        {!isMe &&
+                           (isConnected ? (
+                              <Badge>Connected</Badge>
+                           ) : (
+                              <Badge variant="destructive">Not Connected</Badge>
+                           ))}
+                     </div>
+                  }
                </CardDescription>
             </div>
          </CardFooter>
