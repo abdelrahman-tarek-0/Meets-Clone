@@ -1,4 +1,4 @@
-import type { ExtendedPeer } from '@/utils/createWebRtcConnection'
+import type { ExtendedPeer } from '@/utils/webRTC.helpers'
 
 type User = {
    id: string

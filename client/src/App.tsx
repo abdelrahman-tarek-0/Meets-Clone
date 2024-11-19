@@ -17,7 +17,7 @@ import useSocketConnection from './hooks/useSocketConnection'
 
 import type User from '@/types/User.type'
 
-import createWebRtcConnection from './utils/createWebRtcConnection'
+import createWebRtcConnection from './utils/webRTC.helpers'
 import useMediaStream from '@/hooks/useMediaStream'
 
 function App() {
@@ -302,12 +302,16 @@ function App() {
                />
             </motion.div>
          )}
-         <button onClick={()=>{
-            console.log(users.map(u=>u.id))
-            console.log(users.map(u=>u.connections))
-            console.log(users.map(u=>u.isConnected))
-
-         }}> Test </button>
+         <button
+            onClick={() => {
+               console.log(users.map((u) => u.id))
+               console.log(users.map((u) => u.connections))
+               console.log(users.map((u) => u.isConnected))
+            }}
+         >
+            {' '}
+            Test{' '}
+         </button>
          <Toaster />
       </main>
    )
