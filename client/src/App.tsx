@@ -17,7 +17,7 @@ import useSocketConnection from './hooks/useSocketConnection'
 
 import type User from '@/types/User.type'
 
-import createWebRtcConnection from './utils/webRTC.helpers'
+import { webRTChandler } from './utils/webRTC.helpers'
 import useMediaStream from '@/hooks/useMediaStream'
 
 function App() {
@@ -67,67 +67,15 @@ function App() {
                },
                () => {
                   console.log('Calling', user.id)
-                  const peer = createWebRtcConnection({
-                     id: connectionId,
+
+                  const peer = webRTChandler({
+                     connectionId,
                      initiator: true,
-                     stream: localStream,
-                     onSignal: (signal) => {
-                        socket.emit('signal', {
-                           user: user.id,
-                           id: connectionId,
-                           signal,
-                        })
-                     },
-                     onConnect: () => {
-                        console.log('[CONNECTED]', user.id)
-                        peer.send('Hello')
-
-                        updateUsers(
-                           users.map((u) => {
-                              if (u.id === user.id) {
-                                 return { ...u, isConnected: true }
-                              }
-                              return u
-                           })
-                        )
-                     },
-                     onClose: () => {
-                        console.log(
-                           '[CLOSED]',
-                           user.id,
-                           peer.connected,
-                           peer?.id
-                        )
-
-                        updateUsers(
-                           users.map((u) => {
-                              if (u.id === user.id) {
-                                 delete u?.connections?.[connectionId]
-                                 return {
-                                    ...u,
-                                    isConnected:
-                                       Object.keys(u?.connections || {})
-                                          .length > 0,
-                                 }
-                              }
-                              return u
-                           })
-                        )
-                     },
-                     onData: (data) => {
-                        console.log('Data received', data)
-                     },
-                     onStream: (stream) => {
-                        console.log('Stream received', stream)
-                        updateUsers(
-                           users.map((u) => {
-                              if (u.id === user.id) {
-                                 return { ...u, stream }
-                              }
-                              return u
-                           })
-                        )
-                     },
+                     localStream,
+                     socket,
+                     target: user.id,
+                     updateUsers,
+                     getUsers: () => users,
                   })
 
                   updateUsers(
@@ -153,61 +101,14 @@ function App() {
          const user = users.find((u) => u.id === caller)
          if (!user) return
 
-         const peer = createWebRtcConnection({
-            id,
+         const peer = webRTChandler({
+            connectionId: id,
             initiator: false,
-            stream: localStream,
-            onSignal: (signal) => {
-               socket.emit('signal', {
-                  user: caller,
-                  signal,
-                  id,
-               })
-            },
-            onConnect: () => {
-               console.log('[CONNECTED]', caller)
-               updateUsers(
-                  users.map((u) => {
-                     if (u.id === caller) {
-                        return { ...u, isConnected: true }
-                     }
-                     return u
-                  })
-               )
-            },
-            onClose: () => {
-               console.log('[CLOSED]', caller, peer.connected, peer?.id)
-
-               updateUsers(
-                  users.map((u) => {
-                     if (u.id === caller) {
-                        delete u?.connections?.[id]
-
-                        return {
-                           ...u,
-                           isConnected:
-                              Object.keys(u?.connections || {}).length > 0,
-                        }
-                     }
-                     return u
-                  })
-               )
-            },
-            onData: (data) => {
-               console.log('Data received', data)
-            },
-            onStream: (stream) => {
-               console.log('Stream received', stream)
-
-               updateUsers(
-                  users.map((u) => {
-                     if (u.id === caller) {
-                        return { ...u, stream }
-                     }
-                     return u
-                  })
-               )
-            },
+            localStream,
+            socket,
+            target: caller,
+            updateUsers,
+            getUsers: () => users,
          })
 
          updateUsers(
@@ -229,9 +130,12 @@ function App() {
       socket.on('signal', ({ caller, signal, id }) => {
          const user = users.find((u) => u.id === caller)
          if (!user) return
+
          console.log('[SIGNAL]', caller)
+
          const peer = user?.connections?.[id]
          if (!peer) return
+
          peer.signal(signal)
       })
 
@@ -302,16 +206,6 @@ function App() {
                />
             </motion.div>
          )}
-         <button
-            onClick={() => {
-               console.log(users.map((u) => u.id))
-               console.log(users.map((u) => u.connections))
-               console.log(users.map((u) => u.isConnected))
-            }}
-         >
-            {' '}
-            Test{' '}
-         </button>
          <Toaster />
       </main>
    )
