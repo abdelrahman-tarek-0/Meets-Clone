@@ -27,9 +27,19 @@ export default function UserCard({
    isMe,
    stream,
 }: UserCardProps) {
+   const isAudioExists = () => {
+      return stream && stream.getAudioTracks().length > 0
+   }
+
+   const isVideoExists = () => {
+      return stream && stream.getVideoTracks().length > 0
+   }
+
    const mediaRef = useRef<HTMLVideoElement>(null)
    const [mute, setMute] = useState(false)
-   const [muteVideo, setMuteVide] = useState(false)
+   const [muteVideo, setMuteVideo] = useState(false)
+
+   console.log(mute, muteVideo)
 
    useEffect(() => {
       if (!mediaRef.current || !stream) return
@@ -44,18 +54,73 @@ export default function UserCard({
    }, [stream])
 
    useEffect(() => {
+      console.log('Mute Audio', mute)
       if (!stream) return
+      let isMuted = mute
+
+      if (!isAudioExists()) {
+         setMute(true)
+         isMuted = true
+      }
+
+      // if (!mute && !isAudioExists()) {
+      //    setMute(true)
+      //    isMuted = true
+      // } else if (mute && isAudioExists()) {
+      //    setMute(false)
+      //    isMuted = false
+      // } else {
+      //    isMuted = mute
+      // }
+
       stream.getAudioTracks().forEach((track) => {
-         track.enabled = !mute
+         track.enabled = !isMuted
       })
    }, [mute, stream])
 
    useEffect(() => {
+      console.log('Mute Video', muteVideo)
       if (!stream) return
+
+      let isMuted = muteVideo
+
+      if (!isVideoExists()) {
+         setMuteVideo(true)
+         isMuted = true
+      }
+
+      // if (!muteVideo && !isVideoExists()) {
+      //    setMuteVideo(true)
+      //    isMuted = true
+      // } else if (muteVideo && isVideoExists()) {
+      //    setMuteVideo(false)
+      //    isMuted = false
+      // } else {
+      //    isMuted = muteVideo
+      // }
+
       stream.getVideoTracks().forEach((track) => {
-         track.enabled = !muteVideo
+         track.enabled = !isMuted
       })
    }, [muteVideo, stream])
+
+   // const isAudioMuted = () => {
+   //    return (
+   //       !stream ||
+   //       stream.getAudioTracks().every((track) => !track.enabled) ||
+   //       mute ||
+   //       !stream.getAudioTracks().length
+   //    )
+   // }
+
+   // const isVideoMuted = () => {
+   //    return (
+   //       !stream ||
+   //       stream.getVideoTracks().every((track) => !track.enabled) ||
+   //       muteVideo ||
+   //       !stream.getVideoTracks().length
+   //    )
+   // }
 
    return (
       <Card>
@@ -102,45 +167,69 @@ export default function UserCard({
                   {
                      <div className="flex items-center space-x-2">
                         {mute ? (
-                           <label htmlFor={`${id}-audio`} className="cursor-pointer">
+                           <label
+                              htmlFor={`${id}-audio`}
+                              className="cursor-pointer"
+                           >
                               <MicOff />
                            </label>
                         ) : (
-                           <label htmlFor={`${id}-audio`} className="cursor-pointer">
+                           <label
+                              htmlFor={`${id}-audio`}
+                              className="cursor-pointer"
+                           >
                               <Mic />
                            </label>
                         )}
                         <Checkbox
-                           checked={mute}
+                           checked={mute || !isAudioExists()}
                            style={{
                               visibility: 'hidden',
                            }}
                            id={`${id}-audio`}
                            onCheckedChange={(e) => {
-                              console.log(e.valueOf())
+                              // console.log('Mute Audio change', e.valueOf())
+                              // if (!isAudioExists()) {
+                              //    return setMute(true)
+                              // } else {
+                              //    setMute(e.valueOf() as boolean)
+                              // }
+
                               setMute(e.valueOf() as boolean)
                            }}
                         />
 
                         {muteVideo ? (
-                           <label htmlFor={`${id}-video`}  className="cursor-pointer">
+                           <label
+                              htmlFor={`${id}-video`}
+                              className="cursor-pointer"
+                           >
                               <CameraOff />
                            </label>
                         ) : (
-                           <label htmlFor={`${id}-video`} className="cursor-pointer">
+                           <label
+                              htmlFor={`${id}-video`}
+                              className="cursor-pointer"
+                           >
                               <Camera />
                            </label>
                         )}
 
                         <Checkbox
-                           checked={muteVideo}
+                           checked={muteVideo || !isVideoExists()}
                            style={{
                               visibility: 'hidden',
                            }}
                            id={`${id}-video`}
                            onCheckedChange={(e) => {
-                              console.log(e.valueOf())
-                              setMuteVide(e.valueOf() as boolean)
+                              // console.log('Mute Video change', e.valueOf())
+                              // if (!isVideoExists()) {
+                              //    return setMuteVideo(true)
+                              // } else {
+                              //    setMuteVideo(e.valueOf() as boolean)
+                              // }
+
+                              setMuteVideo(e.valueOf() as boolean)   
                            }}
                         />
 
