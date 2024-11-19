@@ -249,7 +249,7 @@ function App() {
          {loading && <Loader />}
 
          {submitted && !loading && socket && (
-            <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
+            <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }} className='sm:w-10/12 xm:w-full lg:w-9/12 md:w-full'>
                <Room
                   roomID={roomID}
                   name={name}

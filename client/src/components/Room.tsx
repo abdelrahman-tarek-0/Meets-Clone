@@ -41,7 +41,7 @@ export default function Room({
                <CardDescription>Welcome, {name}!</CardDescription>
             </CardHeader>
             <CardContent>
-               <div className="grid grid-cols-2 gap-4">
+               <div className="grid lg:grid-cols-2 sm:grid-cols-1 gap-4">
                   {users
                      .sort(
                         (a, b) =>
@@ -70,28 +70,6 @@ export default function Room({
                >
                   Leave Room
                </Button>
-
-               {/* <Button
-                  onClick={() => {
-                     setStreamConstraints({
-                        ...streamConstraints,
-                        video: !streamConstraints.video,
-                     })
-                  }}
-               >
-                  {streamConstraints.video ? 'Disable Video' : 'Enable Video'}
-               </Button>
-
-               <Button
-                  onClick={() => {
-                     setStreamConstraints({
-                        ...streamConstraints,
-                        audio: !streamConstraints.audio,
-                     })
-                  }}
-               >
-                  {streamConstraints.audio ? 'Disable Audio' : 'Enable Audio'}
-               </Button> */}
             </CardFooter>
          </Card>
       </div>
