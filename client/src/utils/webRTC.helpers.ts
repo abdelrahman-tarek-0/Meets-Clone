@@ -14,6 +14,7 @@ type WebRtcConnection = {
    onClose: () => void
    onData: (data: any) => void
    onStream: (stream: MediaStream) => void
+   onTrack: (track: MediaStreamTrack, stream: MediaStream) => void
    initiator?: boolean
    stream?: MediaStream
    id: string
@@ -21,7 +22,7 @@ type WebRtcConnection = {
 
 type webRTChandlerProps = {
    updateUsers: (users: User[]) => void
-   getUsers: ()=>User[]
+   getUsers: () => User[]
    socket: Socket
    connectionId: string
    localStream?: MediaStream
@@ -35,6 +36,7 @@ export default function createWebRtcConnection({
    onClose,
    onData,
    onStream,
+   onTrack,
    initiator = true,
    stream,
    id,
@@ -55,28 +57,11 @@ export default function createWebRtcConnection({
 
    peer.on('stream', onStream)
 
+   peer.on('track', onTrack)
+
    peer.id = id // Math.floor(Math.random() * 1000)
    return peer
 }
-
-// export function onConnectHandler({
-//    connection,
-//    updateUsers,
-//    users,
-//    user,
-// }: onConnectHandlerProps) {
-//    console.log('[CONNECTED]', user.id)
-//    connection.send('Hello')
-
-//    updateUsers(
-//       users.map((u) => {
-//          if (u.id === user.id) {
-//             return { ...u, isConnected: true }
-//          }
-//          return u
-//       })
-//    )
-// }
 
 export function webRTChandler({
    updateUsers,
@@ -131,11 +116,47 @@ export function webRTChandler({
          console.log('Data received', data)
       },
       onStream: (stream) => {
-         console.log('Stream received', stream)
+         console.log(
+            'Stream received',
+            stream.getTracks(),
+            'number of video tracks',
+            stream.getVideoTracks().length,
+            'number of audio tracks',
+            stream.getAudioTracks().length
+         )
+
+         const userStream = getUsers().find((u) => u.id === target)?.stream
+         if (userStream?.id === stream.id) return console.log('Stream already exists')
+
          updateUsers(
             getUsers().map((u) => {
                if (u.id === target) {
                   return { ...u, stream }
+               }
+               return u
+            })
+         )
+      },
+
+      onTrack: (track, stream) => {
+         console.log('Track received', track, stream)
+
+         let userStream = getUsers().find((u) => u.id === target)?.stream
+         if (!userStream) {
+            userStream = stream
+         }
+
+         if (
+            userStream?.id === stream.id &&
+            userStream.getTracks().find((t) => t.id !== track.id)
+         ) {
+            userStream.addTrack(track)
+         }
+
+         updateUsers(
+            getUsers().map((u) => {
+               if (u.id === target) {
+                  return { ...u, stream: userStream }
                }
                return u
             })
