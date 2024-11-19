@@ -1,7 +1,7 @@
 import type { Instance as PeerInstance, SimplePeer as Peer } from 'simple-peer'
 
 export interface ExtendedPeer extends PeerInstance {
-   id?: number
+   id?: string
 }
 
 const SimplePeer = (window as unknown as any)?.SimplePeer as Peer
@@ -14,6 +14,7 @@ type WebRtcConnection = {
    onStream: (stream: MediaStream) => void
    initiator?: boolean
    stream?: MediaStream
+   id: string
 }
 
 export default function createWebRtcConnection({
@@ -24,6 +25,7 @@ export default function createWebRtcConnection({
    onStream,
    initiator = true,
    stream,
+   id,
 }: WebRtcConnection) {
    const peer: ExtendedPeer = new SimplePeer({
       initiator,
@@ -41,6 +43,6 @@ export default function createWebRtcConnection({
 
    peer.on('stream', onStream)
 
-   peer.id = Math.floor(Math.random() * 1000)
+   peer.id = id // Math.floor(Math.random() * 1000)
    return peer
 }

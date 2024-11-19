@@ -1,9 +1,11 @@
-import type { ExtendedPeer } from '@/utils/createWebRtcConnection';
+import type { ExtendedPeer } from '@/utils/createWebRtcConnection'
 
 type User = {
    id: string
    name: string
-   peer?: ExtendedPeer
+   connections?: {
+      [key: string]: ExtendedPeer
+   }
    isConnected?: boolean
    stream?: MediaStream
 }

@@ -57,88 +57,115 @@ function App() {
 
          usr.forEach((user: User) => {
             if (user.id === socket.id) return
+            const connectionId = Math.random().toString(36).substr(2, 9)
 
-            const peer = createWebRtcConnection({
-               initiator: true,
-               stream: localStream,
-               onSignal: (signal) => {
-                  socket.emit(signal.type === 'offer' ? 'call' : 'signal', {
-                     user: user.id,
-                     signal,
+            socket.emit(
+               'call',
+               {
+                  user: user.id,
+                  id: connectionId,
+               },
+               () => {
+                  console.log('Calling', user.id)
+                  const peer = createWebRtcConnection({
+                     id: connectionId,
+                     initiator: true,
+                     stream: localStream,
+                     onSignal: (signal) => {
+                        socket.emit('signal', {
+                           user: user.id,
+                           id: connectionId,
+                           signal,
+                        })
+                     },
+                     onConnect: () => {
+                        console.log('[CONNECTED]', user.id)
+                        peer.send('Hello')
+
+                        updateUsers(
+                           users.map((u) => {
+                              if (u.id === user.id) {
+                                 return { ...u, isConnected: true }
+                              }
+                              return u
+                           })
+                        )
+                     },
+                     onClose: () => {
+                        console.log(
+                           '[CLOSED]',
+                           user.id,
+                           peer.connected,
+                           peer?.id
+                        )
+
+                        updateUsers(
+                           users.map((u) => {
+                              if (u.id === user.id) {
+                                 delete u?.connections?.[connectionId]
+                                 return {
+                                    ...u,
+                                    isConnected:
+                                       Object.keys(u?.connections || {})
+                                          .length > 0,
+                                 }
+                              }
+                              return u
+                           })
+                        )
+                     },
+                     onData: (data) => {
+                        console.log('Data received', data)
+                     },
+                     onStream: (stream) => {
+                        console.log('Stream received', stream)
+                        updateUsers(
+                           users.map((u) => {
+                              if (u.id === user.id) {
+                                 return { ...u, stream }
+                              }
+                              return u
+                           })
+                        )
+                     },
                   })
-               },
-               onConnect: () => {
-                  console.log('[CONNECTED]', user.id)
-                  peer.send('Hello')
 
                   updateUsers(
                      users.map((u) => {
                         if (u.id === user.id) {
-                           return { ...u, isConnected: true }
+                           return {
+                              ...u,
+                              connections: {
+                                 ...u?.connections,
+                                 [connectionId]: peer,
+                              },
+                           }
                         }
                         return u
                      })
                   )
-               },
-               onClose: () => {
-                  console.log('[CLOSED]', user.id, peer.connected, peer?.id)
-
-                  const connectedUser = users.find((u) => u.id === user.id)
-                  // If the peer is not the same as the connected user's peer, return
-                  if (connectedUser?.peer?.id !== peer.id) return
-
-                  updateUsers(
-                     users.map((u) => {
-                        if (u.id === user.id) {
-                           return { ...u, peer: undefined, isConnected: false }
-                        }
-                        return u
-                     })
-                  )
-               },
-               onData: (data) => {
-                  console.log('Data received', data)
-               },
-               onStream: (stream) => {
-                  console.log('Stream received', stream)
-                  updateUsers(
-                     users.map((u) => {
-                        if (u.id === user.id) {
-                           return { ...u, stream }
-                        }
-                        return u
-                     })
-                  )
-               },
-            })
-
-            updateUsers(
-               users.map((u) => {
-                  if (u.id === user.id) {
-                     return { ...u, peer }
-                  }
-                  return u
-               })
+               }
             )
          })
       })
 
-      socket.on('call', ({ caller, signal }) => {
+      socket.on('call', ({ caller, id }) => {
          const user = users.find((u) => u.id === caller)
          if (!user) return
 
          const peer = createWebRtcConnection({
+            id,
             initiator: false,
             stream: localStream,
             onSignal: (signal) => {
                socket.emit('signal', {
                   user: caller,
                   signal,
+                  id,
                })
             },
             onConnect: () => {
                console.log('[CONNECTED]', caller)
-
                updateUsers(
                   users.map((u) => {
                      if (u.id === caller) {
@@ -151,13 +178,16 @@ function App() {
             onClose: () => {
                console.log('[CLOSED]', caller, peer.connected, peer?.id)
 
-               const connectedUser = users.find((u) => u.id === caller)
-               if (connectedUser?.peer?.id !== peer.id) return
-
                updateUsers(
                   users.map((u) => {
                      if (u.id === caller) {
-                        return { ...u, peer: undefined, isConnected: false }
+                        delete u?.connections?.[id]
+
+                        return {
+                           ...u,
+                           isConnected:
+                              Object.keys(u?.connections || {}).length > 0,
+                        }
                      }
                      return u
                   })
@@ -180,23 +210,29 @@ function App() {
             },
          })
 
-         peer.signal(signal)
-
          updateUsers(
             users.map((u) => {
                if (u.id === caller) {
-                  return { ...u, peer }
+                  return {
+                     ...u,
+                     connections: {
+                        ...u?.connections,
+                        [id]: peer,
+                     },
+                  }
                }
                return u
             })
          )
       })
 
-      socket.on('signal', ({ caller, signal }) => {
+      socket.on('signal', ({ caller, signal, id }) => {
          const user = users.find((u) => u.id === caller)
          if (!user) return
          console.log('[SIGNAL]', caller)
-         user.peer?.signal(signal)
+         const peer = user?.connections?.[id]
+         if (!peer) return
+         peer.signal(signal)
       })
 
       socket.on('user-connected', (user) => {
@@ -207,9 +243,11 @@ function App() {
       socket.on('user-disconnected', (user) => {
          console.log('User disconnected', user)
          users.forEach((u) => {
-            if (u.id === user.id && u.peer) {
-               console.log('Closing peer connection', u?.peer?.destroy?.())
-            }
+            Object.values(u?.connections || {}).forEach((peer) => {
+               if (peer.id === user.id) {
+                  console.log('Closing peer connection', peer.destroy?.())
+               }
+            })
          })
          updateUsers(users.filter((u) => u.id !== user.id))
       })
@@ -249,7 +287,11 @@ function App() {
          {loading && <Loader />}
 
          {submitted && !loading && socket && (
-            <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }} className='sm:w-10/12 xm:w-full lg:w-9/12 md:w-full'>
+            <motion.div
+               initial={{ scale: 0.6 }}
+               animate={{ scale: 1 }}
+               className="sm:w-10/12 xm:w-full lg:w-9/12 md:w-full"
+            >
                <Room
                   roomID={roomID}
                   name={name}
@@ -260,8 +302,12 @@ function App() {
                />
             </motion.div>
          )}
+         <button onClick={()=>{
+            console.log(users.map(u=>u.id))
+            console.log(users.map(u=>u.connections))
+            console.log(users.map(u=>u.isConnected))
 
-
+         }}> Test </button>
          <Toaster />
       </main>
    )
