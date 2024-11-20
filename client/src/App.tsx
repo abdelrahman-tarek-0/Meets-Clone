@@ -25,6 +25,8 @@ function App() {
    const [name, setName] = useLocalStorage('client-name', '')
    const [submitted, setSubmitted] = useState(false)
    const [loading, setLoading] = useState(false)
+
+   // eslint-disable-next-line
    let [users, setUsers] = useState<User[]>([])
 
    const [streamConstraints, setStreamConstraints] =
@@ -48,6 +50,7 @@ function App() {
    }
 
    useEffect(() => {
+      console.log('update socket')
       if (!socket) return
       socket.emit('join-room', roomID)
 
@@ -66,7 +69,14 @@ function App() {
                   id: connectionId,
                },
                () => {
-                  console.log('[CALL]', user.id, 'my local stream video tracks', localStream?.getVideoTracks(), 'my local stream audio tracks', localStream?.getAudioTracks())
+                  console.log(
+                     '[CALL]',
+                     user.id,
+                     'my local stream video tracks',
+                     localStream?.getVideoTracks(),
+                     'my local stream audio tracks',
+                     localStream?.getAudioTracks()
+                  )
 
                   const peer = webRTChandler({
                      connectionId,
@@ -101,7 +111,14 @@ function App() {
          const user = users.find((u) => u.id === caller)
          if (!user) return
 
-         console.log("[CALL]", caller, 'my local stream video tracks', localStream?.getVideoTracks(), 'my local stream audio tracks', localStream?.getAudioTracks())
+         console.log(
+            '[CALL]',
+            caller,
+            'my local stream video tracks',
+            localStream?.getVideoTracks(),
+            'my local stream audio tracks',
+            localStream?.getAudioTracks()
+         )
 
          const peer = webRTChandler({
             connectionId: id,

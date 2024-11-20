@@ -6,7 +6,7 @@ export default function useMediaStream(constraint: MediaStreamConstraints) {
    const streamRef = useRef<MediaStream | null>(null) // To hold the latest stream
 
    useEffect(() => {
-      if(!constraint.audio && !constraint.video) return
+      if (!constraint.audio && !constraint.video) return
       console.log('Requesting media stream')
       navigator.mediaDevices
          .getUserMedia(constraint)

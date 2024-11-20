@@ -87,63 +87,63 @@ export default function LoginCard({
                      />
                   </div>
 
-                  <div 
-                     className="flex space-x-4" 
-                     style={{ 
+                  <div
+                     className="flex space-x-4"
+                     style={{
                         justifyContent: 'center',
                         marginTop: '1rem',
                      }}
                   >
-                  <div className="flex items-center justify-left">
-                     {streamConstraints.audio ? (
-                        <label htmlFor="audio" className="cursor-pointer">
-                           <Mic />
-                        </label>
-                     ) : (
-                        <label htmlFor="audio" className="cursor-pointer">
-                           <MicOff />
-                        </label>
-                     )}
-                     <Checkbox
-                        checked={streamConstraints.audio ? true : false}
-                        style={{
-                           visibility: 'hidden',
-                        }}
-                        id="audio"
-                        onCheckedChange={(e) => {
-                           console.log(e.valueOf())
-                           setStreamConstraints({
-                              ...streamConstraints,
-                              audio: e.valueOf() as boolean,
-                           })
-                        }}
-                     />
-                  </div>
-                  <div className="flex items-center justify-left">
-                     {streamConstraints.video ? (
-                        <label htmlFor="video" className="cursor-pointer">
-                           <Camera />
-                        </label>
-                     ) : (
-                        <label htmlFor="video" className="cursor-pointer">
-                           <CameraOff />
-                        </label>
-                     )}
-                     <Checkbox
-                        checked={streamConstraints.video ? true : false}
-                        style={{
-                           visibility: 'hidden',
-                        }}
-                        id="video"
-                        onCheckedChange={(e) => {
-                           console.log(e.valueOf())
-                           setStreamConstraints({
-                              ...streamConstraints,
-                              video: e.valueOf() as boolean,
-                           })
-                        }}
-                     />
-                  </div>
+                     <div className="flex items-center justify-left">
+                        {streamConstraints.audio ? (
+                           <label htmlFor="audio" className="cursor-pointer">
+                              <Mic />
+                           </label>
+                        ) : (
+                           <label htmlFor="audio" className="cursor-pointer">
+                              <MicOff />
+                           </label>
+                        )}
+                        <Checkbox
+                           checked={streamConstraints.audio ? true : false}
+                           style={{
+                              visibility: 'hidden',
+                           }}
+                           id="audio"
+                           onCheckedChange={(e) => {
+                              console.log(e.valueOf())
+                              setStreamConstraints({
+                                 ...streamConstraints,
+                                 audio: e.valueOf() as boolean,
+                              })
+                           }}
+                        />
+                     </div>
+                     <div className="flex items-center justify-left">
+                        {streamConstraints.video ? (
+                           <label htmlFor="video" className="cursor-pointer">
+                              <Camera />
+                           </label>
+                        ) : (
+                           <label htmlFor="video" className="cursor-pointer">
+                              <CameraOff />
+                           </label>
+                        )}
+                        <Checkbox
+                           checked={streamConstraints.video ? true : false}
+                           style={{
+                              visibility: 'hidden',
+                           }}
+                           id="video"
+                           onCheckedChange={(e) => {
+                              console.log(e.valueOf())
+                              setStreamConstraints({
+                                 ...streamConstraints,
+                                 video: e.valueOf() as boolean,
+                              })
+                           }}
+                        />
+                     </div>
                   </div>
                </div>
             </form>

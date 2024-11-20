@@ -6,13 +6,17 @@ export interface ExtendedPeer extends PeerInstance {
    id?: string
 }
 
-const SimplePeer = (window as unknown as any)?.SimplePeer as Peer
+interface GlobalWindow extends Window {
+   SimplePeer: Peer
+}
+
+const SimplePeer = (window as unknown as GlobalWindow)?.SimplePeer as Peer
 
 type WebRtcConnection = {
-   onSignal: (signal: any) => void
+   onSignal: (signal: unknown) => void
    onConnect: () => void
    onClose: () => void
-   onData: (data: any) => void
+   onData: (data: unknown) => void
    onStream: (stream: MediaStream) => void
    onTrack: (track: MediaStreamTrack, stream: MediaStream) => void
    initiator?: boolean
@@ -126,7 +130,8 @@ export function webRTChandler({
          )
 
          const userStream = getUsers().find((u) => u.id === target)?.stream
-         if (userStream?.id === stream.id) return console.log('Stream already exists')
+         if (userStream?.id === stream.id)
+            return console.log('Stream already exists')
 
          updateUsers(
             getUsers().map((u) => {

@@ -19,8 +19,6 @@ type RoomProps = {
    users: User[]
    socket: Socket | null
    localStream: MediaStream | undefined
-   // streamConstraints: MediaStreamConstraints
-   // setStreamConstraints: (streamConstraints: MediaStreamConstraints) => void
 }
 
 export default function Room({
@@ -30,8 +28,6 @@ export default function Room({
    users,
    socket,
    localStream,
-   // streamConstraints,
-   // setStreamConstraints,
 }: RoomProps) {
    return (
       <div className="flex flex-col items-center justify-center w-full">

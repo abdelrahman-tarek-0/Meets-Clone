@@ -44,9 +44,11 @@ export default function UserCard({
 
       mediaRef.current.srcObject = stream
 
+      const currentPlayer = mediaRef.current
+
       return () => {
-         if (mediaRef.current) {
-            mediaRef.current.srcObject = null
+         if (currentPlayer) {
+            currentPlayer.srcObject = null
          }
       }
    }, [stream])
@@ -64,7 +66,6 @@ export default function UserCard({
       stream.getAudioTracks().forEach((track) => {
          track.enabled = !isMuted
       })
-
    }, [mute, stream])
 
    useEffect(() => {
@@ -93,12 +94,12 @@ export default function UserCard({
             <CardContent className="flex flex-col justify-center items-start">
                <div className="flex items-center justify-center">
                   {stream && ( // stream && stream.getVideoTracks().length > 0 &&
-                        <video
-                           ref={mediaRef}
-                           autoPlay
-                           playsInline
-                           muted={isMe}
-                           className="
+                     <video
+                        ref={mediaRef}
+                        autoPlay
+                        playsInline
+                        muted={isMe}
+                        className="
                               mt-2 
                               rounded-lg
                               shadow-lg
@@ -106,8 +107,8 @@ export default function UserCard({
                               min-w-[300px]
                               max-w-[300px]
                            "
-                        />
-                     )}
+                     />
+                  )}
                   {/* {stream &&
                      stream.getAudioTracks().length > 0 &&
                      stream.getVideoTracks().length === 0 && (
