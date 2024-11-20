@@ -2,7 +2,7 @@ import { Server } from 'socket.io'
 
 import type { Socket as BaseSocket } from 'socket.io'
 import type { Server as HttpsServer } from 'https'
-import type { Server as HttpServer } from 'https'
+import type { Server as HttpServer } from 'http'
 
 import webRTCController from './webRTC.socket.controller.js'
 
