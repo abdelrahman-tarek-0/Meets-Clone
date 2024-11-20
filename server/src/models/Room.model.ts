@@ -5,7 +5,7 @@ class Room {
    users: User[]
 
    constructor(id: string) {
-      this.id = id 
+      this.id = id
       this.users = []
    }
 

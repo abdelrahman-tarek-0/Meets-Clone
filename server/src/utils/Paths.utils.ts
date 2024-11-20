@@ -63,8 +63,8 @@ class Paths {
       }
    }
    static deletePublic = async (...tail: string[]) => {
-        const path = Paths.public(...tail)
-        return await Paths.deleteFile(path)
+      const path = Paths.public(...tail)
+      return await Paths.deleteFile(path)
    }
    static join = (...trail: string[]) => path.join(...trail)
    static isSame = (path1: string, path2: string) => {

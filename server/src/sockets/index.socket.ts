@@ -17,7 +17,7 @@ const rooms: { [key: string]: Room } = {}
 
 const logRoomsTable = () => {
    console.clear()
-   console.table(
+   return console.table(
       Object.values(rooms)
          .map((room) => room.toJson())
          .map((room) => {
@@ -42,7 +42,7 @@ export default (server: HttpsServer | HttpServer) => {
       if (!name || Array.isArray(name)) return next(new Error('Invalid data'))
 
       socket.user = new User({ name, socket, id: socket.id })
-      next()
+      return next()
    })
 
    io.on('connection', (socket: Socket) => {
@@ -56,7 +56,8 @@ export default (server: HttpsServer | HttpServer) => {
       webRTCController(socket, io)
 
       socket.on('join-room', (roomId: string) => {
-         if (!socket.user || !roomId) return socket.emit('error', 'Invalid username or room ID')
+         if (!socket.user || !roomId)
+            return socket.emit('error', 'Invalid username or room ID')
          if (!rooms[roomId]) rooms[roomId] = new Room(roomId)
          rooms[roomId].addUser(socket.user)
 
@@ -71,7 +72,7 @@ export default (server: HttpsServer | HttpServer) => {
          //    socket.user.name
          // )
 
-         logRoomsTable()
+         return logRoomsTable()
       })
 
       socket.on('leave-room', (roomId: string) => {
@@ -106,5 +107,7 @@ export default (server: HttpsServer | HttpServer) => {
 
          console.log('[SOCKET]: A user disconnected', socket.user.name)
       })
+
+      return socket
    })
 }
