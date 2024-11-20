@@ -55,7 +55,7 @@ export default function UserCard({
 
    useEffect(() => {
       console.log('Mute Audio', mute)
-      if (!stream) return
+      if (!stream) return setMute(true)
       let isMuted = mute
 
       if (!isAudioExists()) {
@@ -70,7 +70,7 @@ export default function UserCard({
 
    useEffect(() => {
       console.log('Mute Video', muteVideo)
-      if (!stream) return
+      if (!stream) return setMuteVideo(true)
 
       let isMuted = muteVideo
 
