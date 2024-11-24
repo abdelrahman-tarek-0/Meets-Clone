@@ -38,6 +38,7 @@ export default function UserCard({
    const mediaRef = useRef<HTMLVideoElement>(null)
    const [mute, setMute] = useState(false)
    const [muteVideo, setMuteVideo] = useState(false)
+   
 
    useEffect(() => {
       if (!mediaRef.current || !stream) return
@@ -54,8 +55,8 @@ export default function UserCard({
    }, [stream])
 
    useEffect(() => {
-      console.log('Mute Audio', mute)
-      if (!stream) return setMute(true)
+      if (!stream) return
+      console.log(id, 'Mute Audio', mute, 'isAudioExists', isAudioExists())
       let isMuted = mute
 
       if (!isAudioExists()) {
@@ -66,11 +67,11 @@ export default function UserCard({
       stream.getAudioTracks().forEach((track) => {
          track.enabled = !isMuted
       })
-   }, [mute, stream])
+   }, [stream, mute])
 
    useEffect(() => {
-      console.log('Mute Video', muteVideo)
-      if (!stream) return setMuteVideo(true)
+      if (!stream) return
+      console.log(id ,'Mute Video', muteVideo, 'isVideoExists', isVideoExists())
 
       let isMuted = muteVideo
 
@@ -82,7 +83,7 @@ export default function UserCard({
       stream.getVideoTracks().forEach((track) => {
          track.enabled = !isMuted
       })
-   }, [muteVideo, stream])
+   }, [stream, muteVideo])
 
    return (
       <Card>
@@ -130,7 +131,7 @@ export default function UserCard({
                   <CardDescription>
                      {
                         <div className="flex items-center space-x-2">
-                           {mute ? (
+                           {!stream || mute ? (
                               <label
                                  htmlFor={`${id}-audio`}
                                  className="cursor-pointer"
@@ -156,7 +157,7 @@ export default function UserCard({
                               }}
                            />
 
-                           {muteVideo ? (
+                           {!stream  ||  muteVideo ? (
                               <label
                                  htmlFor={`${id}-video`}
                                  className="cursor-pointer"
