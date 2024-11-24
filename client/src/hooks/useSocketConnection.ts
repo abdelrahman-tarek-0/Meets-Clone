@@ -29,6 +29,7 @@ function useSocketConnection({
             console.log('[SOCKET]', 'connected', socket.id)
             setSocket(socket)
             setError(null)
+            setLoading(false)
          })
 
          socket.on('error', (error) => {

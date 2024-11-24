@@ -1,6 +1,6 @@
 import './App.css'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import useLocalStorage from 'use-local-storage'
 import { toast } from 'sonner'
 
@@ -26,8 +26,13 @@ function App() {
    const [submitted, setSubmitted] = useState(false)
    const [loading, setLoading] = useState(false)
 
-   // eslint-disable-next-line
-   let [users, setUsers] = useState<User[]>([])
+   const [users, setUsers] = useState<User[]>([])
+
+   const usersRef = useRef<User[]>(users)
+
+   useEffect(() => {
+      usersRef.current = users
+   }, [users])
 
    const [streamConstraints, setStreamConstraints] =
       useState<MediaStreamConstraints>({ video: false, audio: false })
@@ -44,152 +49,137 @@ function App() {
    root.classList.remove('light', 'dark')
    root.classList.add('dark')
 
-   const updateUsers = (newUsers: User[]) => {
-      setUsers(newUsers)
-      users = newUsers
-   }
-
    useEffect(() => {
-      console.log('update socket')
-      if (!socket) return
-      socket.emit('join-room', roomID)
-
-      socket.on('room-users', (usr) => {
-         setLoading(false)
-         updateUsers(usr)
-
-         usr.forEach((user: User) => {
-            if (user.id === socket.id) return
-            const connectionId = Math.random().toString(36).substr(2, 9)
-
-            socket.emit(
-               'call',
-               {
-                  user: user.id,
-                  id: connectionId,
-               },
-               () => {
-                  console.log(
-                     '[CALL]',
-                     user.id,
-                     'my local stream video tracks',
-                     localStream?.getVideoTracks(),
-                     'my local stream audio tracks',
-                     localStream?.getAudioTracks()
-                  )
-
-                  const peer = webRTChandler({
-                     connectionId,
-                     initiator: true,
-                     localStream,
-                     socket,
-                     target: user.id,
-                     updateUsers,
-                     getUsers: () => users,
-                  })
-
-                  updateUsers(
-                     users.map((u) => {
-                        if (u.id === user.id) {
-                           return {
-                              ...u,
-                              connections: {
-                                 ...u?.connections,
-                                 [connectionId]: peer,
-                              },
-                           }
-                        }
-                        return u
-                     })
-                  )
-               }
-            )
-         })
-      })
-
-      socket.on('call', ({ caller, id }) => {
-         const user = users.find((u) => u.id === caller)
-         if (!user) return
-
-         console.log(
-            '[CALL]',
-            caller,
-            'my local stream video tracks',
-            localStream?.getVideoTracks(),
-            'my local stream audio tracks',
-            localStream?.getAudioTracks()
-         )
-
-         const peer = webRTChandler({
+      if (!socket || !roomID) return;
+    
+      socket.emit('join-room', roomID);
+    
+      const handleRoomUsers = (roomUsers: User[]) => {
+        setLoading(false);
+    
+        setUsers((prevUsers) => {
+          return roomUsers.map((user) => ({
+            ...user,
+            connections: prevUsers.find((u) => u.id === user.id)?.connections || {},
+          }));
+        });
+    
+        roomUsers.forEach((user) => {
+          if (user.id === socket.id) return;
+    
+          const connectionId = Math.random().toString(36).substr(2, 9);
+    
+          socket.emit(
+            'call',
+            { user: user.id, id: connectionId },
+            () => {
+              const peer = webRTChandler({
+                connectionId,
+                initiator: true,
+                localStream,
+                socket,
+                target: user.id,
+                updateUsers: (updatedUsers) =>
+                  setUsers(() => updatedUsers),
+                getUsers: () => usersRef.current,
+              });
+    
+              setUsers((prevUsers) =>
+                prevUsers.map((u) =>
+                  u.id === user.id
+                    ? {
+                        ...u,
+                        connections: {
+                          ...u.connections,
+                          [connectionId]: peer,
+                        },
+                      }
+                    : u
+                )
+              );
+            }
+          );
+        });
+      };
+    
+      // Other handlers...
+      const handleCall = ({ caller, id }: { caller: string; id: string }) => {
+        setUsers((prevUsers) => {
+          const user = prevUsers.find((u) => u.id === caller);
+          if (!user) return prevUsers;
+    
+          const peer = webRTChandler({
             connectionId: id,
             initiator: false,
             localStream,
             socket,
             target: caller,
-            updateUsers,
-            getUsers: () => users,
-         })
-
-         updateUsers(
-            users.map((u) => {
-               if (u.id === caller) {
-                  return {
-                     ...u,
-                     connections: {
-                        ...u?.connections,
-                        [id]: peer,
-                     },
-                  }
-               }
-               return u
-            })
-         )
-      })
-
-      socket.on('signal', ({ caller, signal, id }) => {
-         const user = users.find((u) => u.id === caller)
-         if (!user) return
-
-         console.log('[SIGNAL]', caller)
-
-         const peer = user?.connections?.[id]
-         if (!peer) return
-
-         peer.signal(signal)
-      })
-
-      socket.on('user-connected', (user) => {
-         console.log('User connected', user)
-         updateUsers([...users, user])
-      })
-
-      socket.on('user-disconnected', (user) => {
-         console.log('User disconnected', user)
-         users.forEach((u) => {
-            Object.values(u?.connections || {}).forEach((peer) => {
-               if (peer.id === user.id) {
-                  console.log('Closing peer connection', peer.destroy?.())
-               }
-            })
-         })
-         updateUsers(users.filter((u) => u.id !== user.id))
-      })
-
+            updateUsers: (updatedUsers) =>
+              setUsers(() => updatedUsers),
+            getUsers: () => usersRef.current,
+          });
+    
+          return prevUsers.map((u) =>
+            u.id === caller
+              ? {
+                  ...u,
+                  connections: {
+                    ...u.connections,
+                    [id]: peer,
+                  },
+                }
+              : u
+          );
+        });
+      };
+    
+      const handleSignal = ({ caller, signal, id }: { caller: string; signal: any; id: string }) => {
+        setUsers((prevUsers) => {
+          const user = prevUsers.find((u) => u.id === caller);
+          if (!user) return prevUsers;
+    
+          const peer = user.connections?.[id];
+          if (peer) peer.signal(signal);
+    
+          return prevUsers;
+        });
+      };
+    
+      const handleUserConnected = (newUser: User) => {
+        setUsers((prevUsers) => [...prevUsers, newUser]);
+      };
+    
+      const handleUserDisconnected = (disconnectedUser: User) => {
+        setUsers((prevUsers) =>
+          prevUsers.filter((u) => u.id !== disconnectedUser.id)
+        );
+      };
+    
+      socket.on('room-users', handleRoomUsers);
+      socket.on('call', handleCall);
+      socket.on('signal', handleSignal);
+      socket.on('user-connected', handleUserConnected);
+      socket.on('user-disconnected', handleUserDisconnected);
+    
       return () => {
-         socket.emit('leave-room', roomID)
-         socket.off('room-users')
-         socket.off('call')
-         socket.off('signal')
-         socket.off('user-connected')
-         socket.off('user-disconnected')
-      }
-   }, [socket])
-
+        socket.emit('leave-room', roomID);
+        socket.off('room-users', handleRoomUsers);
+        socket.off('call', handleCall);
+        socket.off('signal', handleSignal);
+        socket.off('user-connected', handleUserConnected);
+        socket.off('user-disconnected', handleUserDisconnected);
+      };
+    }, [socket, roomID]);
+    
    useEffect(() => {
       if (!error) return
       if (error !== 'Disconnected') toast.error(error)
       setSubmitted(false)
    }, [error])
+
+   useEffect(() => {
+      console.log('Users:', users.length)
+   }, [users])
 
    return (
       <main className="flex flex-col items-center justify-center min-h-screen">
