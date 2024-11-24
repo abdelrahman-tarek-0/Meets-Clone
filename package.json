@@ -1,6 +1,6 @@
 {
-  "name": "taktu",
-  "version": "0.0.1",
+  "name": "meets-clone",
+  "version": "0.1.0",
   "description": "app for chatting and video/audio calls",
   "main": "./server/dist/index.js",
   "scripts": {
