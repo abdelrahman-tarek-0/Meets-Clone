@@ -9,14 +9,14 @@ import {
 import { Button } from '@/components/ui/button'
 
 import type { Socket } from 'socket.io-client'
-import type User from '@/types/User.type'
+
 import UserCard from '@/components/UserCard'
+import useRoomConnection from '@/hooks/useRoomConnection'
 
 type RoomProps = {
    roomID: string
    name: string
    setSubmitted: (submitted: boolean) => void
-   users: User[]
    socket: Socket | null
    localStream: MediaStream | undefined
 }
@@ -25,10 +25,12 @@ export default function Room({
    roomID,
    name,
    setSubmitted,
-   users,
    socket,
    localStream,
 }: RoomProps) {
+   const { users } = useRoomConnection({ socket, roomID, localStream })
+
+
    return (
       <div className="flex flex-col items-center justify-center w-full">
          <Card className="w-full">
@@ -61,6 +63,12 @@ export default function Room({
             <CardFooter>
                <Button
                   onClick={() => {
+                     users.map((user) => {
+                        Object.values(user?.connections || {}).forEach((conn) => {
+                           if(conn.destroyed) return
+                           conn?.destroy?.()
+                        })
+                     })
                      setSubmitted(false)
                   }}
                >
