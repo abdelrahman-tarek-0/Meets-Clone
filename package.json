@@ -1,6 +1,6 @@
 {
   "name": "meets-clone",
-  "version": "stable-1.0.0",
+  "version": "stable-1.2.0",
   "description": "app for chatting and video/audio calls",
   "main": "./server/dist/index.js",
   "scripts": {
