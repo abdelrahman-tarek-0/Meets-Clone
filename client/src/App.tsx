@@ -9,56 +9,62 @@ import LoginCard from '@/components/LoginCard'
 import Room from '@/components/Room'
 import Loader from '@/components/Loader'
 import useSocketConnection from './hooks/useSocketConnection'
-import useMediaStream from '@/hooks/useMediaStream'
+import { getMediaStream } from '@/lib/utils'
 
 function App() {
    const [roomID, setRoomID] = useLocalStorage('last-room-id', '')
    const [name, setName] = useLocalStorage('client-name', '')
-   const [submitted, setSubmitted] = useState(false)
+   const [currentPage, setCurrentPage] = useState('login')
+
    const [loading, setLoading] = useState(false)
 
+   const [connectSocket, setConnectSocket] = useState(false)
 
-   const [streamConstraints, setStreamConstraints] =
-      useState<MediaStreamConstraints>({ video: false, audio: false })
+   const [localStream, setLocalStream] = useState<MediaStream | undefined>(
+      undefined
+   )
 
-   const localStream = useMediaStream(streamConstraints)
+   const handelLogin = (
+      username: string,
+      constraints: MediaStreamConstraints
+   ) => {
+      getMediaStream(constraints).then((stream) => {
+         setLocalStream(stream)
+         setName(username)
+         setRoomID('123')
+         setCurrentPage('room')
+         setConnectSocket(true)
+      })
+   }
 
    const { socket, error } = useSocketConnection({
       setLoading,
-      submitted,
       name,
+      connect: connectSocket,
    })
 
    const root = window.document.documentElement
    root.classList.remove('light', 'dark')
    root.classList.add('dark')
 
-    
    useEffect(() => {
       if (!error) return
       if (error !== 'Disconnected') toast.error(error)
-      setSubmitted(false)
+      setConnectSocket(false)
+      setCurrentPage('login')
    }, [error])
 
    return (
       <main className="flex flex-col items-center justify-center min-h-screen">
-         {!submitted && !socket && !loading && (
+         {currentPage === 'login' && !loading && (
             <motion.div initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
-               <LoginCard
-                  name={name}
-                  setName={setName}
-                  roomID={roomID}
-                  setRoomID={setRoomID}
-                  setSubmitted={setSubmitted}
-                  streamConstraints={streamConstraints}
-                  setStreamConstraints={setStreamConstraints}
-               />
+               <LoginCard onSubmit={handelLogin} />
             </motion.div>
          )}
 
          {loading && <Loader />}
 
-         {submitted && !loading && socket && (
+         {currentPage === 'room' && !loading && socket && (
             <motion.div
                initial={{ scale: 0.6 }}
                animate={{ scale: 1 }}
@@ -67,7 +73,7 @@ function App() {
                <Room
                   roomID={roomID}
                   name={name}
-                  setSubmitted={setSubmitted}
+                  setCurrentPage={setCurrentPage}
                   localStream={localStream}
                   socket={socket}
                />

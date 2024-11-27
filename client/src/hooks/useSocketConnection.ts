@@ -6,20 +6,20 @@ const URL = import.meta.env.VITE_SERVER_URL
 
 type UseSocketConnectionProps = {
    setLoading: (loading: boolean) => void
-   submitted: boolean
+   connect: boolean
    name: string
 }
 
 function useSocketConnection({
    setLoading,
-   submitted,
+   connect,
    name,
 }: UseSocketConnectionProps) {
    const [socket, setSocket] = useState<Socket | null>(null)
    const [error, setError] = useState<string | null>(null)
 
    useEffect(() => {
-      if (submitted) {
+      if (connect) {
          setLoading(true)
          setError(null)
 
@@ -61,7 +61,7 @@ function useSocketConnection({
       } else {
          setSocket(null)
       }
-   }, [submitted])
+   }, [connect])
 
    return {
       socket,

@@ -16,7 +16,7 @@ import useRoomConnection from '@/hooks/useRoomConnection'
 type RoomProps = {
    roomID: string
    name: string
-   setSubmitted: (submitted: boolean) => void
+   setCurrentPage: (page: string) => void
    socket: Socket | null
    localStream: MediaStream | undefined
 }
@@ -24,7 +24,7 @@ type RoomProps = {
 export default function Room({
    roomID,
    name,
-   setSubmitted,
+   setCurrentPage,
    socket,
    localStream,
 }: RoomProps) {
@@ -63,7 +63,7 @@ export default function Room({
             <CardFooter>
                <Button
                   onClick={() => {
-                     setSubmitted(false)
+                     setCurrentPage('login')
                   }}
                >
                   Leave Room

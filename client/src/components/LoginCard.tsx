@@ -1,3 +1,5 @@
+import useLocalStorage from 'use-local-storage'
+
 import { Button } from '@/components/ui/button'
 import {
    Card,
@@ -13,26 +15,48 @@ import { Checkbox } from '@/components/ui/checkbox'
 
 import LiveLogo from '/images/WhiteLiveLogo.gif?url'
 import { Camera, CameraOff, Mic, MicOff } from 'lucide-react'
+import { useEffect, useRef } from 'react'
+import { getMediaStream } from '@/lib/utils'
 
 interface LoginCardProps {
-   name: string
-   setName: (name: string) => void
-   roomID: string
-   setRoomID: (roomID: string) => void
-   setSubmitted: (submitted: boolean) => void
-   streamConstraints: MediaStreamConstraints
-   setStreamConstraints: (constraints: MediaStreamConstraints) => void
+   // name: string
+   // setName: (name: string) => void
+   // roomID: string
+   // setRoomID: (roomID: string) => void
+   onSubmit: (username: string, constraints: MediaStreamConstraints) => void
+   // streamConstraints: MediaStreamConstraints
+   // setStreamConstraints: (constraints: MediaStreamConstraints) => void
 }
 
 export default function LoginCard({
-   name,
-   setName,
-   roomID,
-   setRoomID,
-   setSubmitted,
-   streamConstraints,
-   setStreamConstraints,
+   // name,
+   // setName,
+   // roomID,
+   // setRoomID,
+   onSubmit,
+   // streamConstraints,
+   // setStreamConstraints,
 }: LoginCardProps) {
+   const [name, setName] = useLocalStorage('client-name', '')
+   const [streamConstraints, setStreamConstraints] =
+      useLocalStorage<MediaStreamConstraints>('prefer-media-constraints', {
+         video: false,
+         audio: false,
+      })
+   const streamRef = useRef<MediaStream>()
+
+   // for testing stream on the login card
+   useEffect(() => {
+      if (!streamConstraints.audio && !streamConstraints.video)
+         return streamRef.current?.getTracks().forEach((track) => track.stop())
+
+      getMediaStream(streamConstraints).then((stream) => {
+         if(!stream) return setStreamConstraints({ video: false, audio: false })
+         console.log('stream request')
+         streamRef.current = stream
+      })
+   }, [streamConstraints])
+
    return (
       <Card className="w-[350px]">
          <CardHeader>
@@ -77,7 +101,7 @@ export default function LoginCard({
                         onChange={(e) => setName(e.target.value)}
                      />
                   </div>
-                  <div className="flex flex-col space-y-1.5">
+                  {/* <div className="flex flex-col space-y-1.5">
                      <Label htmlFor="roomID">Room Id</Label>
                      <Input
                         id="roomID"
@@ -85,7 +109,7 @@ export default function LoginCard({
                         value={roomID}
                         onChange={(e) => setRoomID(e.target.value)}
                      />
-                  </div>
+                  </div> */}
 
                   <div
                      className="flex space-x-4"
@@ -151,7 +175,9 @@ export default function LoginCard({
          <CardFooter className="flex justify-between">
             <Button
                onClick={() => {
-                  setSubmitted(true)
+                  streamRef.current?.getTracks().forEach((track) => track.stop())
+                  streamRef.current = undefined
+                  onSubmit(name, streamConstraints)
                }}
             >
                Enter
