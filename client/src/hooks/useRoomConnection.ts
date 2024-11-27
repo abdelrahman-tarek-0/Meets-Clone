@@ -26,10 +26,37 @@ function useRoomConnection({
       usersRef.current = users
    }, [users])
 
+   const handelTrack =
+      (userId: string) => (track: MediaStreamTrack, stream: MediaStream) => {
+         let userStream = usersRef?.current?.find(
+            (u) => u.id === userId
+         )?.stream
+
+         if (!userStream) {
+            console.log('No stream found to insert track using stream received')
+            userStream = stream
+         }
+
+         if (
+            userStream?.id === stream.id &&
+            userStream.getTracks().find((t) => t.id !== track.id)
+         ) {
+            console.log('Adding track to existing stream')
+            userStream.addTrack(track)
+         }
+
+         setUsers((prevUsers) =>
+            prevUsers.map((u) =>
+               u.id === userId ? { ...u, stream: userStream } : u
+            )
+         )
+      }
+
    useEffect(() => {
       if (!socket || !roomID) return
 
       socket.emit('join-room', roomID)
+
       const handleRoomUsers = (roomUsers: User[]) => {
          console.log('Room Users:', roomUsers)
          setUsers(roomUsers)
@@ -53,6 +80,7 @@ function useRoomConnection({
                      )
                   },
                   getUsers: () => usersRef.current,
+                  handelTrack: handelTrack(user.id),
                })
 
                Connections.setConnection(user.id, connectionId, peer)
@@ -75,6 +103,7 @@ function useRoomConnection({
                   )
                )
             },
+            handelTrack: handelTrack(caller),
          })
 
          Connections.setConnection(caller, id, peer)
