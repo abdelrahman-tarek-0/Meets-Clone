@@ -78,6 +78,11 @@ export default (server: HttpsServer | HttpServer) => {
 
          if (!rooms[roomId]) return
          rooms[roomId].removeUserBySocket(socket.user.id)
+
+         Object.keys(rooms).forEach((roomId) => {
+            if (rooms[roomId].users.length === 0) delete rooms[roomId]
+         })
+
          logRoomsTable()
       })
 
