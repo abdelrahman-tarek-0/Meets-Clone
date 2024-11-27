@@ -62,8 +62,9 @@ export default function Room({
             </CardContent>
             <CardFooter>
                <Button
+               variant='destructive'
                   onClick={() => {
-                     setCurrentPage('login')
+                     setCurrentPage('roomsTable')
                   }}
                >
                   Leave Room
