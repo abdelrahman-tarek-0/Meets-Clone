@@ -48,5 +48,5 @@ app.use((_req, res) => {
 socketServer(server)
 
 server.listen(port, () => {
-   console.log(`[SERVER]: http${secure ? 's' : ''}://127.0.0.1:${port}`)
+   console.log(`[SERVER]: http${secure ? 's' : ''}://127.0.0.1:${port}`, process.version)
 })
