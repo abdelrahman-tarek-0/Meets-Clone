@@ -9,7 +9,6 @@ export function cn(...inputs: ClassValue[]) {
 export const getMediaStream = async (constraints: MediaStreamConstraints) => {
    try {
       if (!constraints.audio && !constraints.video) {
-         toast.error('You did not request any media devices')
          return
       }
 
@@ -17,7 +16,7 @@ export const getMediaStream = async (constraints: MediaStreamConstraints) => {
       return stream
    } catch (error) {
       const errorMessage = (error as Error)?.message || error
-      toast.error(`Requesting ${constraints.video ? 'camera' : ''} ${constraints.audio ? 'microphone' : ''} failed: ${errorMessage}`)
+      toast.error(`Requesting media device failed: ${errorMessage}`)
       console.warn(error)
    }
 }
