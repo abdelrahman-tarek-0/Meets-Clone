@@ -15,27 +15,15 @@ import { Checkbox } from '@/components/ui/checkbox'
 
 import LiveLogo from '/images/WhiteLiveLogo.gif?url'
 import { Camera, CameraOff, Mic, MicOff } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getMediaStream } from '@/lib/utils'
 
 interface LoginCardProps {
-   // name: string
-   // setName: (name: string) => void
-   // roomID: string
-   // setRoomID: (roomID: string) => void
    onSubmit: (username: string, constraints: MediaStreamConstraints) => void
-   // streamConstraints: MediaStreamConstraints
-   // setStreamConstraints: (constraints: MediaStreamConstraints) => void
 }
 
 export default function LoginCard({
-   // name,
-   // setName,
-   // roomID,
-   // setRoomID,
    onSubmit,
-   // streamConstraints,
-   // setStreamConstraints,
 }: LoginCardProps) {
    const [name, setName] = useLocalStorage('client-name', '')
    const [streamConstraints, setStreamConstraints] =
@@ -43,15 +31,33 @@ export default function LoginCard({
          video: false,
          audio: false,
       })
+
+   const [prevStreamConstraints, setPrevStreamConstraints] =
+      useState<MediaStreamConstraints>(streamConstraints)
+
    const streamRef = useRef<MediaStream>()
 
    // for testing stream on the login card
    useEffect(() => {
-      if (!streamConstraints.audio && !streamConstraints.video)
-         return streamRef.current?.getTracks().forEach((track) => track.stop())
+      if (!streamConstraints.audio && !streamConstraints.video) {
+         streamRef.current?.getTracks().forEach((track) => track.stop())
+         streamRef.current = undefined
+
+         return
+      }
+
+      if (!streamConstraints.audio) {
+         streamRef.current?.getAudioTracks().forEach((track) => track.stop())
+      }
+
+      if (!streamConstraints.video) {
+         streamRef.current?.getVideoTracks().forEach((track) => track.stop())
+      }
 
       getMediaStream(streamConstraints).then((stream) => {
-         if(!stream) return setStreamConstraints({ video: false, audio: false })
+         if (!stream) {
+            return setStreamConstraints(prevStreamConstraints)
+         }
          console.log('stream request')
          streamRef.current = stream
       })
@@ -66,8 +72,8 @@ export default function LoginCard({
                   alignItems: 'center',
                   justifyContent: 'center',
                }}
-            >
-               Join Chat Room
+            > 
+               <span>Live Rooms</span>
                <img
                   src={LiveLogo}
                   alt="Live"
@@ -76,17 +82,14 @@ export default function LoginCard({
                      height: '30px',
                      marginLeft: '10px',
                      marginBottom: '-5px',
-                     // backgroundColor: "white"
-                     // backgroundColor: "white",
                      pointerEvents: 'none',
-                     // stop image selection
                      userSelect: 'none',
                   }}
                   className=""
                />
             </CardTitle>
             <CardDescription>
-               Enter your name and room id to join the chat room
+               Enter your name and choose your media preferences
             </CardDescription>
          </CardHeader>
          <CardContent>
@@ -101,16 +104,6 @@ export default function LoginCard({
                         onChange={(e) => setName(e.target.value)}
                      />
                   </div>
-                  {/* <div className="flex flex-col space-y-1.5">
-                     <Label htmlFor="roomID">Room Id</Label>
-                     <Input
-                        id="roomID"
-                        placeholder="Enter room id"
-                        value={roomID}
-                        onChange={(e) => setRoomID(e.target.value)}
-                     />
-                  </div> */}
-
                   <div
                      className="flex space-x-4"
                      style={{
@@ -135,7 +128,7 @@ export default function LoginCard({
                            }}
                            id="audio"
                            onCheckedChange={(e) => {
-                              console.log(e.valueOf())
+                              setPrevStreamConstraints(streamConstraints)
                               setStreamConstraints({
                                  ...streamConstraints,
                                  audio: e.valueOf() as boolean,
@@ -160,7 +153,7 @@ export default function LoginCard({
                            }}
                            id="video"
                            onCheckedChange={(e) => {
-                              console.log(e.valueOf())
+                              setPrevStreamConstraints(streamConstraints)
                               setStreamConstraints({
                                  ...streamConstraints,
                                  video: e.valueOf() as boolean,
@@ -175,7 +168,9 @@ export default function LoginCard({
          <CardFooter className="flex justify-between">
             <Button
                onClick={() => {
-                  streamRef.current?.getTracks().forEach((track) => track.stop())
+                  streamRef.current
+                     ?.getTracks()
+                     .forEach((track) => track.stop())
                   streamRef.current = undefined
                   onSubmit(name, streamConstraints)
                }}
