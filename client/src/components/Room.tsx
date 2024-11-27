@@ -63,12 +63,12 @@ export default function Room({
             <CardFooter>
                <Button
                   onClick={() => {
-                     users.map((user) => {
-                        Object.values(user?.connections || {}).forEach((conn) => {
-                           if(conn.destroyed) return
-                           conn?.destroy?.()
-                        })
-                     })
+                     // users.map((user) => {
+                     //    Object.values(user?.connections || {}).forEach((conn) => {
+                     //       if(conn.destroyed) return
+                     //       conn?.destroy?.()
+                     //    })
+                     // })
                      setSubmitted(false)
                   }}
                >
