@@ -8,8 +8,9 @@ import { Toaster } from '@/components/ui/sonner'
 import LoginCard from '@/components/LoginCard'
 import Room from '@/components/Room'
 import Loader from '@/components/Loader'
-import useSocketConnection from './hooks/useSocketConnection'
+import useSocketConnection from '@/hooks/useSocketConnection'
 import { getMediaStream } from '@/lib/utils'
+import RoomsTable from '@/components/RoomsTable'
 
 function App() {
    const [roomID, setRoomID] = useLocalStorage('last-room-id', '')
@@ -28,13 +29,19 @@ function App() {
       username: string,
       constraints: MediaStreamConstraints
    ) => {
+      if(localStream) localStream.getTracks().forEach((track) => track.stop())
+
       getMediaStream(constraints).then((stream) => {
          setLocalStream(stream)
          setName(username)
-         setRoomID('123')
-         setCurrentPage('room')
+         setCurrentPage('roomsTable')
          setConnectSocket(true)
       })
+   }
+
+   const handleJoinRoom = (roomID: string) => {
+      setRoomID(roomID)
+      setCurrentPage('room')
    }
 
    const { socket, error } = useSocketConnection({
@@ -63,6 +70,19 @@ function App() {
          )}
 
          {loading && <Loader />}
+
+         {currentPage === 'roomsTable' && !loading && socket && (
+            <motion.div
+               initial={{ scale: 0.6 }}
+               animate={{ scale: 1 }}
+               className="sm:w-10/12 xm:w-full lg:w-9/12 md:w-full flex flex-col items-center justify-center"
+            >
+               <RoomsTable
+                  onJoin={handleJoinRoom}
+                  setCurrentPage={setCurrentPage}
+               />
+            </motion.div>
+         )}
 
          {currentPage === 'room' && !loading && socket && (
             <motion.div
