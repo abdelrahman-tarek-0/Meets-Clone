@@ -9,11 +9,11 @@ import webRTCController from './webRTC.socket.controller.js'
 import User from '../models/User.model.js'
 import Room from '../models/Room.model.js'
 
+import rooms from '../global/rooms.global.js'
+
 interface Socket extends BaseSocket {
    user?: User
 }
-
-const rooms: { [key: string]: Room } = {}
 
 const logRoomsTable = () => {
    console.clear()
@@ -67,11 +67,6 @@ export default (server: HttpsServer | HttpServer) => {
 
          console.log(socket.rooms)
 
-         // console.log(
-         //    `[SOCKET]: A user joined the room ${roomId}`,
-         //    socket.user.name
-         // )
-
          return logRoomsTable()
       })
 
@@ -82,8 +77,6 @@ export default (server: HttpsServer | HttpServer) => {
          socket.to(roomId).emit('user-disconnected', socket.user.toJson())
 
          if (!rooms[roomId]) return
-
-         // console.log('[SOCKET]: A user left the room', socket.user.name)
          rooms[roomId].removeUserBySocket(socket.user.id)
          logRoomsTable()
       })
@@ -91,14 +84,15 @@ export default (server: HttpsServer | HttpServer) => {
       socket.on('disconnecting', () => {
          socket.rooms.forEach((room) => {
             if (room === socket.id || !socket.user || !rooms[room]) return
-
             socket.to(room).emit('user-disconnected', socket.user.toJson())
-
-            // console.log(
-            //    `[SOCKET]: A user ${socket.user.name} left room ${room}`
-            // )
             rooms[room].removeUserBySocket(socket.id)
          })
+
+         // remove empty rooms
+         Object.keys(rooms).forEach((roomId) => {
+            if (rooms[roomId].users.length === 0) delete rooms[roomId]
+         })
+         
          logRoomsTable()
       })
 
