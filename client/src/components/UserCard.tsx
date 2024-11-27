@@ -27,63 +27,80 @@ export default function UserCard({
    isMe,
    stream,
 }: UserCardProps) {
-   const isAudioExists = () => {
-      return stream && stream.getAudioTracks().length > 0
-   }
-
-   const isVideoExists = () => {
-      return stream && stream.getVideoTracks().length > 0
-   }
-
    const mediaRef = useRef<HTMLVideoElement>(null)
-   const [mute, setMute] = useState(false)
+   const [muteAudio, setMuteAudio] = useState(false)
    const [muteVideo, setMuteVideo] = useState(false)
-   
+
+   const hasAudioTracks = () => stream && stream?.getAudioTracks()?.length > 0
+   const hasVideoTracks = () => stream && stream?.getVideoTracks()?.length > 0
 
    useEffect(() => {
-      if (!mediaRef.current || !stream) return
-
-      mediaRef.current.srcObject = stream
-
-      const currentPlayer = mediaRef.current
-
+      if (mediaRef.current && stream) {
+         mediaRef.current.srcObject = stream
+      }
       return () => {
-         if (currentPlayer) {
-            currentPlayer.srcObject = null
+         if (mediaRef.current) {
+            mediaRef.current.srcObject = null
          }
       }
    }, [stream])
 
    useEffect(() => {
       if (!stream) return
-      console.log(id, 'Mute Audio', mute, 'isAudioExists', isAudioExists())
-      let isMuted = mute
+      console.log(id, 'Mute Audio', muteAudio, 'isAudioExists', hasAudioTracks())
+      let isMuted = muteAudio
 
-      if (!isAudioExists()) {
-         setMute(true)
+      if (!hasAudioTracks()) {
+         setMuteAudio(true)
          isMuted = true
       }
 
-      stream.getAudioTracks().forEach((track) => {
+      stream?.getAudioTracks()?.forEach((track) => {
          track.enabled = !isMuted
       })
-   }, [stream, mute])
+   }, [stream, muteAudio])
 
+      
    useEffect(() => {
       if (!stream) return
-      console.log(id ,'Mute Video', muteVideo, 'isVideoExists', isVideoExists())
-
+      console.log(id, 'Mute Video', muteVideo, 'isVideoExists', hasVideoTracks())
       let isMuted = muteVideo
 
-      if (!isVideoExists()) {
+      if (!hasVideoTracks()) {
          setMuteVideo(true)
          isMuted = true
       }
 
-      stream.getVideoTracks().forEach((track) => {
+      stream?.getVideoTracks()?.forEach((track) => {
          track.enabled = !isMuted
       })
+
+
    }, [stream, muteVideo])
+
+   useEffect(() => {
+      if (!stream) return
+
+      const handleTrackAdded = () => {
+         if (hasVideoTracks()) {
+            setMuteVideo(false)
+         }
+      }
+
+      const handleTrackRemoved = () => {
+         if (!hasVideoTracks()) {
+            setMuteVideo(true)
+         }
+      }
+
+      stream.addEventListener('addtrack', handleTrackAdded)
+      stream.addEventListener('removetrack', handleTrackRemoved)
+
+      return () => {
+         stream.removeEventListener('addtrack', handleTrackAdded)
+         stream.removeEventListener('removetrack', handleTrackRemoved)
+      }
+   }, [stream])
 
    return (
       <Card>
@@ -94,36 +111,17 @@ export default function UserCard({
          <div className="flex items-center justify-end flex-col h-5/6">
             <CardContent className="flex flex-col justify-center items-start">
                <div className="flex items-center justify-center">
-                  {stream && ( // stream && stream.getVideoTracks().length > 0 &&
+                  {stream ? (
                      <video
                         ref={mediaRef}
                         autoPlay
                         playsInline
                         muted={isMe}
-                        className="
-                              mt-2 
-                              rounded-lg
-                              shadow-lg
-                              w-[300px]
-                              min-w-[300px]
-                              max-w-[300px]
-                           "
+                        className="mt-2 rounded-lg shadow-lg w-[300px]"
                      />
+                  ) : (
+                     <Badge variant="destructive">No Stream</Badge>
                   )}
-                  {/* {stream &&
-                     stream.getAudioTracks().length > 0 &&
-                     stream.getVideoTracks().length === 0 && (
-                        <>
-                           <audio
-                              ref={mediaRef}
-                              autoPlay
-                              playsInline
-                              muted={isMe}
-                           />
-                           <Badge variant="secondary">Audio Only</Badge>
-                        </>
-                     )} */}
-                  {!stream && <Badge variant="destructive">No Stream</Badge>}
                </div>
             </CardContent>
             <CardFooter>
@@ -131,50 +129,34 @@ export default function UserCard({
                   <CardDescription>
                      {
                         <div className="flex items-center space-x-2">
-                           {!stream || mute ? (
-                              <label
-                                 htmlFor={`${id}-audio`}
-                                 className="cursor-pointer"
-                              >
-                                 <MicOff />
-                              </label>
-                           ) : (
-                              <label
-                                 htmlFor={`${id}-audio`}
-                                 className="cursor-pointer"
-                              >
-                                 <Mic />
-                              </label>
-                           )}
+                           <label
+                              htmlFor={`${id}-audio`}
+                              className="cursor-pointer"
+                           >
+                              {!stream || muteAudio ? <MicOff /> : <Mic />}
+                           </label>
                            <Checkbox
-                              checked={mute || !isAudioExists()}
+                              checked={muteAudio || !hasAudioTracks()}
                               style={{
                                  visibility: 'hidden',
                               }}
                               id={`${id}-audio`}
                               onCheckedChange={(e) => {
-                                 setMute(e.valueOf() as boolean)
+                                 setMuteAudio(e.valueOf() as boolean)
                               }}
                            />
-
-                           {!stream  ||  muteVideo ? (
-                              <label
-                                 htmlFor={`${id}-video`}
-                                 className="cursor-pointer"
-                              >
+                           <label
+                              htmlFor={`${id}-video`}
+                              className="cursor-pointer"
+                           >
+                              {!stream || muteVideo ? (
                                  <CameraOff />
-                              </label>
-                           ) : (
-                              <label
-                                 htmlFor={`${id}-video`}
-                                 className="cursor-pointer"
-                              >
+                              ) : (
                                  <Camera />
-                              </label>
-                           )}
-
+                              )}
+                           </label>
                            <Checkbox
-                              checked={muteVideo || !isVideoExists()}
+                              checked={muteVideo || !hasVideoTracks()}
                               style={{
                                  visibility: 'hidden',
                               }}
