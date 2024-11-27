@@ -4,6 +4,8 @@ import { webRTChandler } from '@/utils/webRTC.helpers'
 import type { Socket } from 'socket.io-client'
 import type User from '@/types/User.type'
 
+import Connections from '@/global/UsersConnections'
+
 type RoomConnectionProps = {
    socket: Socket | null
    roomID: string
@@ -19,6 +21,8 @@ function useRoomConnection({
    const usersRef = useRef<User[]>(users)
 
    useEffect(() => {
+      console.log('Users:', users)
+      console.log('Active Connections:', Connections.length)
       usersRef.current = users
    }, [users])
 
@@ -28,18 +32,10 @@ function useRoomConnection({
       socket.emit('join-room', roomID)
       const handleRoomUsers = (roomUsers: User[]) => {
          console.log('Room Users:', roomUsers)
-
-         setUsers((prevUsers) =>
-            roomUsers.map((user) => ({
-               ...user,
-               connections:
-                  prevUsers.find((u) => u.id === user.id)?.connections || {},
-            }))
-         )
+         setUsers(roomUsers)
 
          roomUsers.forEach((user) => {
             if (user.id === socket.id) return
-
             const connectionId = Math.random().toString(36).substr(2, 9)
 
             socket.emit('call', { user: user.id, id: connectionId }, () => {
@@ -49,54 +45,39 @@ function useRoomConnection({
                   localStream,
                   socket,
                   target: user.id,
-                  updateUsers: (updatedUsers) => setUsers(() => updatedUsers),
+                  updateTargetUser: (updatedUser) => {
+                     setUsers((prevUsers) =>
+                        prevUsers.map((u) =>
+                           u.id === user.id ? { ...u, ...updatedUser } : u
+                        )
+                     )
+                  },
                   getUsers: () => usersRef.current,
                })
 
-               setUsers((prevUsers) =>
-                  prevUsers.map((u) =>
-                     u.id === user.id
-                        ? {
-                             ...u,
-                             connections: {
-                                ...u.connections,
-                                [connectionId]: peer,
-                             },
-                          }
-                        : u
-                  )
-               )
+               Connections.setConnection(user.id, connectionId, peer)
             })
          })
       }
 
       const handleCall = ({ caller, id }: { caller: string; id: string }) => {
-         setUsers((prevUsers) => {
-            const user = prevUsers.find((u) => u.id === caller)
-            if (!user) return prevUsers
-
-            const peer = webRTChandler({
-               connectionId: id,
-               initiator: false,
-               localStream,
-               socket,
-               target: caller,
-               updateUsers: (updatedUsers) => setUsers(() => updatedUsers),
-               getUsers: () => usersRef.current,
-            })
-
-            return prevUsers.map((u) =>
-               u.id === caller
-                  ? {
-                       ...u,
-                       connections: {
-                          ...u.connections,
-                          [id]: peer,
-                       },
-                    }
-                  : u
-            )
+         const peer = webRTChandler({
+            connectionId: id,
+            initiator: false,
+            localStream,
+            socket,
+            target: caller,
+            getUsers: () => usersRef.current,
+            updateTargetUser: (updatedUser) => {
+               setUsers((prevUsers) =>
+                  prevUsers.map((u) =>
+                     u.id === caller ? { ...u, ...updatedUser } : u
+                  )
+               )
+            },
          })
+
+         Connections.setConnection(caller, id, peer)
       }
 
       const handleSignal = ({
@@ -108,15 +89,7 @@ function useRoomConnection({
          signal: any
          id: string
       }) => {
-         setUsers((prevUsers) => {
-            const user = prevUsers.find((u) => u.id === caller)
-            if (!user) return prevUsers
-
-            const peer = user.connections?.[id]
-            if (peer) peer.signal(signal)
-
-            return prevUsers
-         })
+         Connections.signalConnection(caller, id, signal)
       }
 
       const handleUserConnected = (newUser: User) => {
@@ -124,12 +97,7 @@ function useRoomConnection({
       }
 
       const handleUserDisconnected = (disconnectedUser: User) => {
-         // usersRef.current.forEach((user) => {
-         //    Object.values({ ...(user?.connections || {}) }).forEach((conn) => {
-         //       if (conn.destroyed) return
-         //       conn?.destroy?.()
-         //    })
-         // })
+         Connections.destroyUserConnections(disconnectedUser.id)
          setUsers((prevUsers) =>
             prevUsers.filter((u) => u.id !== disconnectedUser.id)
          )
@@ -149,13 +117,7 @@ function useRoomConnection({
          socket.off('user-connected', handleUserConnected)
          socket.off('user-disconnected', handleUserDisconnected)
 
-         // usersRef.current.forEach((user) => {
-         //    Object.values({ ...(user?.connections || {}) }).forEach((conn) => {
-         //       if (conn.destroyed) return
-         //       conn?.destroy?.()
-         //    })
-         // })
-
+         Connections.destroyAllConnections()
          setUsers([])
          usersRef.current = []
       }

@@ -1,6 +1,7 @@
 import type { Instance as PeerInstance, SimplePeer as Peer } from 'simple-peer'
 import type User from '@/types/User.type'
 import type { Socket } from 'socket.io-client'
+import Connections from '@/global/UsersConnections'
 
 export interface ExtendedPeer extends PeerInstance {
    id?: string
@@ -25,7 +26,7 @@ type WebRtcConnection = {
 }
 
 type webRTChandlerProps = {
-   updateUsers: (users: User[]) => void
+   updateTargetUser: (user: Partial<User>) => void
    getUsers: () => User[]
    socket: Socket
    connectionId: string
@@ -68,13 +69,13 @@ export default function createWebRtcConnection({
 }
 
 export function webRTChandler({
-   updateUsers,
    getUsers,
    socket,
    connectionId,
    localStream,
    initiator,
    target,
+   updateTargetUser,
 }: webRTChandlerProps) {
    const peer = createWebRtcConnection({
       id: connectionId,
@@ -90,31 +91,16 @@ export function webRTChandler({
 
       onConnect: () => {
          console.log('[CONNECTED]', target)
-         updateUsers(
-            getUsers().map((u) => {
-               if (u.id === target) {
-                  return { ...u, isConnected: true }
-               }
-               return u
-            })
-         )
+         updateTargetUser({ isConnected: true })
       },
 
       onClose: () => {
          console.log('[CLOSED]', target, peer.connected, peer?.id)
-
-         updateUsers(
-            getUsers().map((u) => {
-               if (u.id === target) {
-                  delete u?.connections?.[connectionId]
-                  return {
-                     ...u,
-                     isConnected: Object.keys(u?.connections || {}).length > 0,
-                  }
-               }
-               return u
-            })
+         const connections = Connections.getAllConnectionsToUser(target).filter(
+            (c) => c.id !== connectionId
          )
+
+         updateTargetUser({ isConnected: connections.length > 0 })
       },
       onData: (data) => {
          console.log('Data received', data)
@@ -133,14 +119,7 @@ export function webRTChandler({
          if (userStream?.id === stream.id)
             return console.log('Stream already exists')
 
-         updateUsers(
-            getUsers().map((u) => {
-               if (u.id === target) {
-                  return { ...u, stream }
-               }
-               return u
-            })
-         )
+         updateTargetUser({ stream })
       },
 
       onTrack: (track, stream) => {
@@ -158,14 +137,7 @@ export function webRTChandler({
             userStream.addTrack(track)
          }
 
-         updateUsers(
-            getUsers().map((u) => {
-               if (u.id === target) {
-                  return { ...u, stream: userStream }
-               }
-               return u
-            })
-         )
+         updateTargetUser({ stream: userStream })
       },
    })
 
