@@ -43,9 +43,10 @@ export default function UserCard({
    message,
 }: UserCardProps) {
    const mediaRef = useRef<HTMLVideoElement>(null)
-   const audioActivityRef = useRef<HTMLDivElement>(null)
    const [muteAudio, setMuteAudio] = useState(false)
    const [muteVideo, setMuteVideo] = useState(false)
+
+   const [micColor, setMicColor] = useState('white')
 
    const hasAudioTracks = () => stream && stream?.getAudioTracks()?.length > 0
    const hasVideoTracks = () => stream && stream?.getVideoTracks()?.length > 0
@@ -64,17 +65,7 @@ export default function UserCard({
    useEffect(() => {
       if (!stream) return
       const interval = monitorAudioActivity(stream, (status) => {
-         audioActivityRef.current?.classList?.remove(
-            'border-2',
-            'border-green-500'
-         )
-
-         if (status === 'active') {
-            audioActivityRef.current?.classList?.add(
-               'border-2',
-               'border-green-500'
-            )
-         }
+         setMicColor(status === 'active' ? 'green' : 'white')
       })
 
       return () => {
@@ -172,7 +163,6 @@ export default function UserCard({
             <CardContent className="flex flex-col justify-center items-start">
                <div
                   className="flex items-center justify-center"
-                  ref={audioActivityRef}
                >
                   {/* border-2 border-green-500 */}
                   {stream ? (
@@ -197,7 +187,7 @@ export default function UserCard({
                               htmlFor={`${id}-audio`}
                               className="cursor-pointer"
                            >
-                              {!stream || muteAudio ? <MicOff /> : <Mic />}
+                              {!stream || muteAudio ? <MicOff /> : <Mic color={micColor} />}
                            </label>
                            <Checkbox
                               checked={muteAudio || !hasAudioTracks()}
@@ -214,7 +204,7 @@ export default function UserCard({
                               className="cursor-pointer"
                            >
                               {!stream || muteVideo ? (
-                                 <CameraOff />
+                                 <CameraOff/>
                               ) : (
                                  <Camera />
                               )}
