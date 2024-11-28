@@ -26,64 +26,43 @@ import {
    DialogTrigger,
 } from '@/components/ui/dialog'
 
-import {
-   Tooltip,
-   TooltipContent,
-   TooltipProvider,
-   TooltipTrigger,
- } from "@/components/ui/tooltip"
-
 
 
 function UsersDialog({ users, roomId }: { users: User[]; roomId: string }) {
    return (
       <Dialog>
-         <DialogTrigger>
-            <TooltipProvider >
-               <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                     <Button variant="secondary">
-                        {users.length > 1
-                           ? `${users.length} users`
-                           : `${users.length} user`}
-                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent >
-                     click to view users
-                  </TooltipContent>
-               </Tooltip>
-            </TooltipProvider>
- 
+         <DialogTrigger asChild>
+            <Button variant="secondary">
+               {users.length > 1
+                  ? `${users.length} users`
+                  : `${users.length} user`}
+            </Button>
          </DialogTrigger>
          <DialogContent>
             <DialogHeader>
                <DialogTitle>Users in room {roomId}</DialogTitle>
             </DialogHeader>
-            <DialogDescription>
-               {/* display user names and ids in table */}
-               <Table>
-                  <TableHeader>
-                     <TableRow>
-                        <TableHead className="font-medium">Name</TableHead>
-                        <TableHead className="font-medium">ID</TableHead>
+            <DialogDescription></DialogDescription>
+            <Table>
+               <TableHeader>
+                  <TableRow>
+                     <TableHead className="font-medium">Name</TableHead>
+                     <TableHead className="font-medium">ID</TableHead>
+                  </TableRow>
+               </TableHeader>
+               <TableBody>
+                  {users.map((user) => (
+                     <TableRow key={user.id}>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.id}</TableCell>
                      </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                     {users.map((user) => (
-                        <TableRow key={user.id}>
-                           <TableCell>{user.name}</TableCell>
-                           <TableCell>{user.id}</TableCell>
-                        </TableRow>
-                     ))}
-                  </TableBody>
-               </Table>
-            </DialogDescription>
+                  ))}
+               </TableBody>
+            </Table>
          </DialogContent>
       </Dialog>
    )
 }
-
-
 
 export default function RoomsTable({
    onJoin,
