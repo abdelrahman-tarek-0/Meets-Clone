@@ -5,6 +5,7 @@ import type { Socket } from 'socket.io-client'
 import type User from '@/types/User.type'
 
 import Connections from '@/global/UsersConnections'
+import { toast } from 'sonner'
 
 type RoomConnectionProps = {
    socket: Socket | null
@@ -143,6 +144,7 @@ function useRoomConnection({
       }) => {
          if (!user || !message) return
 
+         toast.success(`Message from ${user.name}: ${message}`)
          setUsers((prevUsers) =>
             prevUsers.map((u) =>
                u.id === user.id
