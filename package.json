@@ -12,7 +12,7 @@
     "format": " npm run format:client && npm run format:server",
     "build:client": "cd client && npm run build",
     "build:server": "cd server && npm run build",
-    "pre:build:server": "cp -r client/dist/* server/public/",
+    "pre:build:server": "rm -rf server/public/assets/ && cp -r client/dist/* server/public/",
     "build": "npm run build:client && npm run pre:build:server && npm run build:server",
     "start": "cd server && npm start",
     "force": "npm run build && npm start",
