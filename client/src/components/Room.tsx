@@ -35,6 +35,10 @@ const commands = [
       command: '/red',
       schema: '/red [message] -- Send a red message',
    },
+   {
+      command: '/quite',
+      schema: '/quite [message] -- Send a quite message',
+   }
 ]
 
 const getCommandMessage = (message: string) => {
@@ -151,7 +155,6 @@ export default function Room({
                                  }}
                                  onFocus={() => setTooltipOpen(true)}
                                  onBlur={() => setTooltipOpen(false)}
-
                                  ref={inputRef}
                               />
                            </TooltipTrigger>
@@ -167,7 +170,11 @@ export default function Room({
                                        `}
                                           onClick={() => {
                                              inputRef.current?.focus()
-                                             setMessage(command.command + ' ' + message)
+                                             setMessage(
+                                                command.command +
+                                                   ' ' +
+                                                   `${message || ''}`
+                                             )
                                           }}
                                        >
                                           {command.schema}

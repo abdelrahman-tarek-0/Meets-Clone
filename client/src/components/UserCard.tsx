@@ -26,6 +26,14 @@ type UserCardProps = {
    }
 }
 
+const typeMessageMap = {
+   '/red': 'destructive',
+   '/quite': 'outline',
+   '/default': 'secondary',
+} as {
+   [key: string]: 'destructive' | 'outline' | 'secondary'
+}
+
 export default function UserCard({
    id,
    name,
@@ -150,7 +158,7 @@ export default function UserCard({
                   said:
                   <Badge
                      variant={
-                        message.type === '/red' ? 'destructive' : 'secondary'
+                        typeMessageMap[(message?.type as '/red' | '/quite')] || 'secondary'
                      }
                      className="flex-grow text-center ml-1 overflow-hidden whitespace-nowrap text-ellipsis"
                      title={message.text}

@@ -144,7 +144,9 @@ function useRoomConnection({
       }) => {
          if (!user || !message) return
 
-         toast.success(`Message from ${user.name}: ${message}`)
+         if (type !== '/quite') {
+            toast.success(`Message from ${user.name}: ${message}`)
+         }
          setUsers((prevUsers) =>
             prevUsers.map((u) =>
                u.id === user.id
@@ -152,7 +154,7 @@ function useRoomConnection({
                        ...u,
                        message: {
                           text: message,
-                          type: type || 'text',
+                          type: type || '/default',
                        },
                     }
                   : u
