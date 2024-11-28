@@ -132,11 +132,38 @@ function useRoomConnection({
          )
       }
 
+      const handelUserMessage = ({
+         user,
+         message,
+         type,
+      }: {
+         user: User
+         message: string
+         type: string
+      }) => {
+         if (!user || !message) return
+
+         setUsers((prevUsers) =>
+            prevUsers.map((u) =>
+               u.id === user.id
+                  ? {
+                       ...u,
+                       message: {
+                          text: message,
+                          type: type || 'text',
+                       },
+                    }
+                  : u
+            )
+         )
+      }
+
       socket.on('room-users', handleRoomUsers)
       socket.on('call', handleCall)
       socket.on('signal', handleSignal)
       socket.on('user-connected', handleUserConnected)
       socket.on('user-disconnected', handleUserDisconnected)
+      socket.on('message', handelUserMessage)
 
       return () => {
          socket.emit('leave-room', roomID)
@@ -145,6 +172,7 @@ function useRoomConnection({
          socket.off('signal', handleSignal)
          socket.off('user-connected', handleUserConnected)
          socket.off('user-disconnected', handleUserDisconnected)
+         socket.off('message', handelUserMessage)
 
          Connections.destroyAllConnections()
          setUsers([])
@@ -152,7 +180,7 @@ function useRoomConnection({
       }
    }, [socket])
 
-   return { users }
+   return { users, setUsers }
 }
 
 export default useRoomConnection
