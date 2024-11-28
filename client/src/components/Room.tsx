@@ -12,6 +12,14 @@ import type { Socket } from 'socket.io-client'
 
 import UserCard from '@/components/UserCard'
 import useRoomConnection from '@/hooks/useRoomConnection'
+import { Input } from '@/components/ui/input'
+import { useState } from 'react'
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipProvider,
+   TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 type RoomProps = {
    roomID: string
@@ -21,6 +29,27 @@ type RoomProps = {
    localStream: MediaStream | undefined
 }
 
+const commands = [
+   {
+      command: '/red',
+      schema: '/red [message] -- Send a red message',
+   },
+]
+
+const getCommandMessage = (message: string) => {
+   const isCommand = commands.find((command) =>
+      message.startsWith(command.command)
+   )
+   if (!isCommand) return null
+   return isCommand.command
+}
+
+const sanitizeMessage = (message: string) => {
+   const command = getCommandMessage(message)
+   if (!command) return message
+   return message.replace(command, '')
+}
+
 export default function Room({
    roomID,
    name,
@@ -28,8 +57,14 @@ export default function Room({
    socket,
    localStream,
 }: RoomProps) {
-   const { users } = useRoomConnection({ socket, roomID, localStream })
-
+   const { users, setUsers } = useRoomConnection({
+      socket,
+      roomID,
+      localStream,
+   })
+   const [message, setMessage] = useState<string | null | undefined>(null)
+   const [tooltipOpen, setTooltipOpen] = useState(false)
+   const [selectedCommand, setSelectedCommand] = useState<string | null>(null)
 
    return (
       <div className="flex flex-col items-center justify-center w-full">
@@ -56,19 +91,106 @@ export default function Room({
                            stream={
                               user.id === socket?.id ? localStream : user.stream
                            }
+                           message={user.message}
                         />
                      ))}
                </div>
             </CardContent>
             <CardFooter>
-               <Button
-               variant='destructive'
-                  onClick={() => {
-                     setCurrentPage('roomsTable')
-                  }}
+               <div
+                  className="flex flex-col space-y-4"
+                  style={{ width: '100%' }}
                >
-                  Leave Room
-               </Button>
+                  <div className="flex items-center justify-between">
+                     <TooltipProvider delayDuration={0}>
+                        <Tooltip open={tooltipOpen}>
+                           <TooltipTrigger asChild>
+                              <Input
+                                 placeholder="Say something..."
+                                 className="mr-2"
+                                 value={message || ''}
+                                 onChange={(e) => {
+                                    const command = getCommandMessage(
+                                       e.target.value
+                                    )
+                                    setSelectedCommand(command)
+                                    setMessage(e.target.value)
+                                 }}
+                                 onFocus={() => setTooltipOpen(true)}
+                                 onBlur={() => setTooltipOpen(false)}
+                              />
+                           </TooltipTrigger>
+                           <TooltipContent align="start">
+                              <div className="flex flex-col space-y-2">
+                                 <h1>Commands:</h1>
+                                 <ul>
+                                    {commands.map((command) => (
+                                       <li
+                                          key={command.command}
+                                          className={`
+                                          ${selectedCommand === command.command && 'bg-gray-700'} p-2 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200 ease-in-out'
+                                       `}
+                                          onClick={() => {
+                                             setMessage(command.command + ' ')
+                                          }}
+                                       >
+                                          {command.schema}
+                                       </li>
+                                    ))}
+                                 </ul>
+                              </div>
+                           </TooltipContent>
+                        </Tooltip>
+                     </TooltipProvider>
+                     <Button
+                        variant="secondary"
+                        onClick={() => {
+                           if (!message || !socket) return
+
+                           console.log(
+                              'Sending message:',
+                              message,
+                              sanitizeMessage(message),
+                              getCommandMessage(message)
+                           )
+                           socket.emit(
+                              'message',
+                              sanitizeMessage(message),
+                              getCommandMessage(message)
+                           )
+                           setMessage('')
+
+                           setUsers((prevUsers) => {
+                              return prevUsers.map((u) =>
+                                 u.id === socket.id
+                                    ? {
+                                         ...u,
+                                         message: {
+                                            text: sanitizeMessage(message),
+                                            type:
+                                               getCommandMessage(message) ||
+                                               'text',
+                                         },
+                                      }
+                                    : u
+                              )
+                           })
+                        }}
+                     >
+                        Send
+                     </Button>
+                  </div>
+
+                  <Button
+                     variant="destructive"
+                     className="w-fit"
+                     onClick={() => {
+                        setCurrentPage('roomsTable')
+                     }}
+                  >
+                     Leave Room
+                  </Button>
+               </div>
             </CardFooter>
          </Card>
       </div>
