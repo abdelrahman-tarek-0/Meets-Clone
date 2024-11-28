@@ -26,15 +26,34 @@ import {
    DialogTrigger,
 } from '@/components/ui/dialog'
 
+import {
+   Tooltip,
+   TooltipContent,
+   TooltipProvider,
+   TooltipTrigger,
+ } from "@/components/ui/tooltip"
+
+
+
 function UsersDialog({ users, roomId }: { users: User[]; roomId: string }) {
    return (
       <Dialog>
          <DialogTrigger>
-            <Button variant="secondary">
-               {users.length > 1
-                  ? `${users.length} users`
-                  : `${users.length} user`}
-            </Button>
+            <TooltipProvider >
+               <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                     <Button variant="secondary">
+                        {users.length > 1
+                           ? `${users.length} users`
+                           : `${users.length} user`}
+                     </Button>
+                  </TooltipTrigger>
+                  <TooltipContent >
+                     click to view users
+                  </TooltipContent>
+               </Tooltip>
+            </TooltipProvider>
+ 
          </DialogTrigger>
          <DialogContent>
             <DialogHeader>
@@ -64,6 +83,8 @@ function UsersDialog({ users, roomId }: { users: User[]; roomId: string }) {
    )
 }
 
+
+
 export default function RoomsTable({
    onJoin,
    setCurrentPage,
@@ -71,39 +92,32 @@ export default function RoomsTable({
    onJoin: (roomId: string) => void
    setCurrentPage: (page: string) => void
 }) {
-   const [rooms, setRooms] = useState<Room[]>([
-      //   {
-      //      id: '123',
-      //      users: [
-      //         { id: '1', name: 'user1' },
-      //         { id: '2', name: 'user2' },
-      //         { id: '3', name: 'user3' },
-      //      ],
-      //   },
-      //   {
-      //      id: '456',
-      //      users: [
-      //         { id: '4', name: 'user4' },
-      //         { id: '5', name: 'user5' },
-      //         { id: '6', name: 'user6' },
-      //      ],
-      //   },
-   ])
+   const [rooms, setRooms] = useState<Room[]>([])
    const [roomId, setRoomId] = useState('')
 
+   const [refresh, setRefresh] = useState(0)
+   const [loading, setLoading] = useState(false)
+
+   const refreshRooms = () => {
+      setRefresh((prev) => prev + 1)
+   }
+
    useEffect(() => {
+      setLoading(true)
       getRooms()
          .then((rooms) => {
+            setLoading(false)
             setRooms(rooms)
          })
          .catch((error) => {
+            setLoading(false)
             if (error.response) {
                toast.error(error?.response?.data?.message)
             } else {
                toast.error('An error occurred')
             }
          })
-   }, [])
+   }, [refresh])
 
    return (
       <div
@@ -119,7 +133,12 @@ export default function RoomsTable({
             border-2
         "
       >
-         <h1 className="p-4  text-2xl">Rooms</h1>
+         <h1 className="text-2xl">Rooms</h1>
+         <p className="text-sm text-gray-500">
+            Select a room to join or create a new room <br />
+            click on the number of users to view users in the room
+         </p>
+
          <div
             className="
             mt-4
@@ -160,7 +179,13 @@ export default function RoomsTable({
                   </TableRow>
                </TableHeader>
                <TableBody>
-                  {rooms.length ? (
+                  {loading ? (
+                     <TableRow>
+                        <TableCell colSpan={3} className="text-center">
+                           Loading...
+                        </TableCell>
+                     </TableRow>
+                  ) : rooms.length ? (
                      rooms.map((room) => (
                         <TableRow key={room.id}>
                            <TableCell>{room.id}</TableCell>
@@ -197,6 +222,9 @@ export default function RoomsTable({
                onClick={() => setCurrentPage('login')}
             >
                Leave
+            </Button>
+            <Button variant="secondary" onClick={refreshRooms} className="ml-2">
+               Refresh
             </Button>
          </div>
       </div>
