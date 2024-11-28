@@ -20,3 +20,32 @@ export const getMediaStream = async (constraints: MediaStreamConstraints) => {
       console.warn(error)
    }
 }
+
+export const monitorAudioActivity = (
+   stream: MediaStream,
+   update: (status: string) => void
+) => {
+   const audioContext = new AudioContext()
+   const analyser = audioContext.createAnalyser()
+   analyser.fftSize = 256
+   const source = audioContext.createMediaStreamSource(stream)
+   source.connect(analyser)
+
+   const dataArray = new Uint8Array(analyser.frequencyBinCount)
+   const checkVolume = () => {
+      analyser.getByteFrequencyData(dataArray)
+      const volume =
+         dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length
+
+      const threshold = 10
+      if (volume > threshold) {
+         update('active')
+      } else {
+         update('inactive')
+      }
+   }
+
+   return setInterval(() => {
+      checkVolume()
+   }, 20)
+}
