@@ -19,6 +19,10 @@ type UserCardProps = {
    isMe: boolean
    isConnected?: boolean
    stream?: MediaStream
+   message?: {
+      text?: string
+      type?: string
+   }
 }
 export default function UserCard({
    id,
@@ -26,6 +30,7 @@ export default function UserCard({
    isConnected,
    isMe,
    stream,
+   message,
 }: UserCardProps) {
    const mediaRef = useRef<HTMLVideoElement>(null)
    const [muteAudio, setMuteAudio] = useState(false)
@@ -47,7 +52,13 @@ export default function UserCard({
 
    useEffect(() => {
       if (!stream) return
-      console.log(id, 'Mute Audio', muteAudio, 'isAudioExists', hasAudioTracks())
+      console.log(
+         id,
+         'Mute Audio',
+         muteAudio,
+         'isAudioExists',
+         hasAudioTracks()
+      )
       let isMuted = muteAudio
 
       if (!hasAudioTracks()) {
@@ -60,10 +71,15 @@ export default function UserCard({
       })
    }, [stream, muteAudio])
 
-      
    useEffect(() => {
       if (!stream) return
-      console.log(id, 'Mute Video', muteVideo, 'isVideoExists', hasVideoTracks())
+      console.log(
+         id,
+         'Mute Video',
+         muteVideo,
+         'isVideoExists',
+         hasVideoTracks()
+      )
       let isMuted = muteVideo
 
       if (!hasVideoTracks()) {
@@ -74,8 +90,6 @@ export default function UserCard({
       stream?.getVideoTracks()?.forEach((track) => {
          track.enabled = !isMuted
       })
-
-
    }, [stream, muteVideo])
 
    useEffect(() => {
@@ -107,6 +121,18 @@ export default function UserCard({
          <CardHeader className="h-1/6">
             <CardTitle>{name}</CardTitle>
             <CardDescription>{id}</CardDescription>
+            {message && (
+               <div className="w-full flex">
+                  said:
+                  <Badge
+                     variant={message.type === '/red' ? 'destructive' : 'secondary'}
+                     className="flex-grow text-center ml-1 overflow-hidden whitespace-nowrap text-ellipsis"
+                     title={message.text}
+                  >
+                     {message.text}
+                  </Badge>
+               </div>
+            )}
          </CardHeader>
          <div className="flex items-center justify-end flex-col h-5/6">
             <CardContent className="flex flex-col justify-center items-start">
