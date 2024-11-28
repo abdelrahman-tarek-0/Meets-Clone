@@ -66,6 +66,31 @@ export default function Room({
    const [tooltipOpen, setTooltipOpen] = useState(false)
    const [selectedCommand, setSelectedCommand] = useState<string | null>(null)
 
+   const handelSendMessage = () => {
+      if (!message || !socket) return
+
+      const command = getCommandMessage(message)
+      const text = sanitizeMessage(message)
+
+      socket.emit('message', text, command)
+
+      setUsers((prevUsers) => {
+         return prevUsers.map((u) =>
+            u.id === socket.id
+               ? {
+                    ...u,
+                    message: {
+                       text,
+                       type: command || 'text',
+                    },
+                 }
+               : u
+         )
+      })
+
+      setMessage('')
+   }
+
    return (
       <div className="flex flex-col items-center justify-center w-full">
          <Card className="w-full">
@@ -108,6 +133,11 @@ export default function Room({
                               <Input
                                  placeholder="Say something..."
                                  className="mr-2"
+                                 onKeyUp={(e) => {
+                                    if (e.key === 'Enter') {
+                                       handelSendMessage()
+                                    }
+                                 }}
                                  value={message || ''}
                                  onChange={(e) => {
                                     const command = getCommandMessage(
@@ -144,38 +174,8 @@ export default function Room({
                      </TooltipProvider>
                      <Button
                         variant="secondary"
-                        onClick={() => {
-                           if (!message || !socket) return
-
-                           console.log(
-                              'Sending message:',
-                              message,
-                              sanitizeMessage(message),
-                              getCommandMessage(message)
-                           )
-                           socket.emit(
-                              'message',
-                              sanitizeMessage(message),
-                              getCommandMessage(message)
-                           )
-                           setMessage('')
-
-                           setUsers((prevUsers) => {
-                              return prevUsers.map((u) =>
-                                 u.id === socket.id
-                                    ? {
-                                         ...u,
-                                         message: {
-                                            text: sanitizeMessage(message),
-                                            type:
-                                               getCommandMessage(message) ||
-                                               'text',
-                                         },
-                                      }
-                                    : u
-                              )
-                           })
-                        }}
+                        type="submit"
+                        onClick={handelSendMessage}
                      >
                         Send
                      </Button>
