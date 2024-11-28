@@ -17,6 +17,7 @@ import LiveLogo from '/images/WhiteLiveLogo.gif?url'
 import { Camera, CameraOff, Mic, MicOff } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { getMediaStream } from '@/lib/utils'
+import { toast } from 'sonner'
 
 interface LoginCardProps {
    onSubmit: (username: string, constraints: MediaStreamConstraints) => void
@@ -168,6 +169,9 @@ export default function LoginCard({
          <CardFooter className="flex justify-between">
             <Button
                onClick={() => {
+                  if(!name) {
+                     return toast.error('Please enter your name')
+                  }
                   streamRef.current
                      ?.getTracks()
                      .forEach((track) => track.stop())
