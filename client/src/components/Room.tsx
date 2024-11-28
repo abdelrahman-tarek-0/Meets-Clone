@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react'
+
 import {
    Card,
    CardContent,
@@ -13,7 +15,6 @@ import type { Socket } from 'socket.io-client'
 import UserCard from '@/components/UserCard'
 import useRoomConnection from '@/hooks/useRoomConnection'
 import { Input } from '@/components/ui/input'
-import { useState } from 'react'
 import {
    Tooltip,
    TooltipContent,
@@ -65,6 +66,8 @@ export default function Room({
    const [message, setMessage] = useState<string | null | undefined>(null)
    const [tooltipOpen, setTooltipOpen] = useState(false)
    const [selectedCommand, setSelectedCommand] = useState<string | null>(null)
+
+   const inputRef = useRef<HTMLInputElement>(null)
 
    const handelSendMessage = () => {
       if (!message || !socket) return
@@ -148,6 +151,8 @@ export default function Room({
                                  }}
                                  onFocus={() => setTooltipOpen(true)}
                                  onBlur={() => setTooltipOpen(false)}
+
+                                 ref={inputRef}
                               />
                            </TooltipTrigger>
                            <TooltipContent align="start">
@@ -161,7 +166,8 @@ export default function Room({
                                           ${selectedCommand === command.command && 'bg-gray-700'} p-2 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200 ease-in-out'
                                        `}
                                           onClick={() => {
-                                             setMessage(command.command + ' ')
+                                             inputRef.current?.focus()
+                                             setMessage(command.command + ' ' + message)
                                           }}
                                        >
                                           {command.schema}
