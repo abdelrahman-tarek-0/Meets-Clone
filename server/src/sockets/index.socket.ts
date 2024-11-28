@@ -86,6 +86,23 @@ export default (server: HttpsServer | HttpServer) => {
          logRoomsTable()
       })
 
+      socket.on('message', (message: string, type: string) => {
+         if (!socket.user) return
+
+         const roomId = Array.from(socket.rooms).find(
+            (room) => room !== socket.id
+         )
+         if (!roomId) return
+
+         if (!rooms[roomId]) return
+
+         socket.to(roomId).emit('message', {
+            user: socket.user.toJson(),
+            message,
+            type,
+         })
+      })
+
       socket.on('disconnecting', () => {
          socket.rooms.forEach((room) => {
             if (room === socket.id || !socket.user || !rooms[room]) return
@@ -97,7 +114,7 @@ export default (server: HttpsServer | HttpServer) => {
          Object.keys(rooms).forEach((roomId) => {
             if (rooms[roomId].users.length === 0) delete rooms[roomId]
          })
-         
+
          logRoomsTable()
       })
 
