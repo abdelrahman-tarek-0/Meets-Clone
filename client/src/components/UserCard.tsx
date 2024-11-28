@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 
 import { Mic, MicOff, Camera, CameraOff } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
+import { monitorAudioActivity } from '@/lib/utils'
 
 type UserCardProps = {
    id: string
@@ -24,6 +25,7 @@ type UserCardProps = {
       type?: string
    }
 }
+
 export default function UserCard({
    id,
    name,
@@ -33,6 +35,7 @@ export default function UserCard({
    message,
 }: UserCardProps) {
    const mediaRef = useRef<HTMLVideoElement>(null)
+   const audioActivityRef = useRef<HTMLDivElement>(null)
    const [muteAudio, setMuteAudio] = useState(false)
    const [muteVideo, setMuteVideo] = useState(false)
 
@@ -47,6 +50,27 @@ export default function UserCard({
          if (mediaRef.current) {
             mediaRef.current.srcObject = null
          }
+      }
+   }, [stream])
+
+   useEffect(() => {
+      if (!stream) return
+      const interval = monitorAudioActivity(stream, (status) => {
+         audioActivityRef.current?.classList?.remove(
+            'border-2',
+            'border-green-500'
+         )
+
+         if (status === 'active') {
+            audioActivityRef.current?.classList?.add(
+               'border-2',
+               'border-green-500'
+            )
+         }
+      })
+
+      return () => {
+         clearInterval(interval)
       }
    }, [stream])
 
@@ -125,7 +149,9 @@ export default function UserCard({
                <div className="w-full flex">
                   said:
                   <Badge
-                     variant={message.type === '/red' ? 'destructive' : 'secondary'}
+                     variant={
+                        message.type === '/red' ? 'destructive' : 'secondary'
+                     }
                      className="flex-grow text-center ml-1 overflow-hidden whitespace-nowrap text-ellipsis"
                      title={message.text}
                   >
@@ -136,7 +162,11 @@ export default function UserCard({
          </CardHeader>
          <div className="flex items-center justify-end flex-col h-5/6">
             <CardContent className="flex flex-col justify-center items-start">
-               <div className="flex items-center justify-center">
+               <div
+                  className="flex items-center justify-center"
+                  ref={audioActivityRef}
+               >
+                  {/* border-2 border-green-500 */}
                   {stream ? (
                      <video
                         ref={mediaRef}
