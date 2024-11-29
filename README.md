@@ -1,6 +1,7 @@
-<h1 style="display: flex; align-items: center; justify-content: center;">
-  <span>Meets Clone</span> <img  src="./docs/logo.gif" width="50">
-</h1>
+<p align="center">
+  <h1>Meets Clone</h1> 
+  <img src="./docs/logo.gif" width="50">
+</p>
 
 ## Description
 
