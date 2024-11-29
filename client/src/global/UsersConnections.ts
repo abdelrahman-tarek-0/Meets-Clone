@@ -32,7 +32,7 @@ class Connections {
    static destroyUserConnections(userId: string) {
       const userConnections = Connections.map.get(userId)
       if (!userConnections) return
-      for (const [_connectionId, connection] of userConnections) {
+      for (const [, connection] of userConnections) {
          connection.destroy()
       }
 
@@ -40,8 +40,8 @@ class Connections {
    }
 
    static destroyAllConnections() {
-      for (const [_userId, userConnections] of Connections.map) {
-         for (const [_connectionId, connection] of userConnections) {
+      for (const [, userConnections] of Connections.map) {
+         for (const [, connection] of userConnections) {
             connection.destroy()
          }
       }
@@ -58,22 +58,20 @@ class Connections {
       }
    }
 
-  static getAllConnectionsToUser(userId: string) {
-    const connections = Connections.map.get(userId)
-    if (!connections) return []
-    return Array.from(connections.values())
-  }
+   static getAllConnectionsToUser(userId: string) {
+      const connections = Connections.map.get(userId)
+      if (!connections) return []
+      return Array.from(connections.values())
+   }
 
-  static get length () {
+   static get length() {
       let count = 0
       for (const [, userConnections] of Connections.map) {
          count += userConnections.size
       }
 
       return count
-  }
-
-
+   }
 }
 
 export default Connections

@@ -149,7 +149,8 @@ export default function UserCard({
                   said:
                   <Badge
                      variant={
-                        typeMessageMap[(message?.type as '/red' | '/quite')] || 'secondary'
+                        typeMessageMap[message?.type as '/red' | '/quite'] ||
+                        'secondary'
                      }
                      className="flex-grow text-center ml-1 overflow-hidden whitespace-nowrap text-ellipsis"
                      title={message.text}
@@ -161,9 +162,7 @@ export default function UserCard({
          </CardHeader>
          <div className="flex items-center justify-end flex-col h-5/6">
             <CardContent className="flex flex-col justify-center items-start">
-               <div
-                  className="flex items-center justify-center"
-               >
+               <div className="flex items-center justify-center">
                   {/* border-2 border-green-500 */}
                   {stream ? (
                      <video
@@ -187,7 +186,11 @@ export default function UserCard({
                               htmlFor={`${id}-audio`}
                               className="cursor-pointer"
                            >
-                              {!stream || muteAudio ? <MicOff /> : <Mic color={micColor} />}
+                              {!stream || muteAudio ? (
+                                 <MicOff />
+                              ) : (
+                                 <Mic color={micColor} />
+                              )}
                            </label>
                            <Checkbox
                               checked={muteAudio || !hasAudioTracks()}
@@ -204,7 +207,7 @@ export default function UserCard({
                               className="cursor-pointer"
                            >
                               {!stream || muteVideo ? (
-                                 <CameraOff/>
+                                 <CameraOff />
                               ) : (
                                  <Camera />
                               )}

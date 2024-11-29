@@ -65,8 +65,6 @@ export default (server: HttpsServer | HttpServer) => {
          socket.to(roomId).emit('user-connected', socket.user.toJson())
          socket.emit('room-users', rooms[roomId].toJson().users)
 
-         console.log(socket.rooms)
-
          return logRoomsTable()
       })
 

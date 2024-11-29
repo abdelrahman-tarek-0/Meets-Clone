@@ -26,8 +26,6 @@ import {
    DialogTrigger,
 } from '@/components/ui/dialog'
 
-
-
 function UsersDialog({ users, roomId }: { users: User[]; roomId: string }) {
    return (
       <Dialog>

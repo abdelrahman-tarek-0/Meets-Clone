@@ -1,4 +1,4 @@
-import Room from "../models/Room.model.js";
+import Room from '../models/Room.model.js'
 
 const rooms: { [key: string]: Room } = {}
 

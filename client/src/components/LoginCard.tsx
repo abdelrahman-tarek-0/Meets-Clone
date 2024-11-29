@@ -23,9 +23,7 @@ interface LoginCardProps {
    onSubmit: (username: string, constraints: MediaStreamConstraints) => void
 }
 
-export default function LoginCard({
-   onSubmit,
-}: LoginCardProps) {
+export default function LoginCard({ onSubmit }: LoginCardProps) {
    const [name, setName] = useLocalStorage('client-name', '')
    const [streamConstraints, setStreamConstraints] =
       useLocalStorage<MediaStreamConstraints>('prefer-media-constraints', {
@@ -73,7 +71,7 @@ export default function LoginCard({
                   alignItems: 'center',
                   justifyContent: 'center',
                }}
-            > 
+            >
                <span>Live Rooms</span>
                <img
                   src={LiveLogo}
@@ -169,7 +167,7 @@ export default function LoginCard({
          <CardFooter className="flex justify-between">
             <Button
                onClick={() => {
-                  if(!name) {
+                  if (!name) {
                      return toast.error('Please enter your name')
                   }
                   streamRef.current

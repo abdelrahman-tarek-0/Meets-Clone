@@ -29,7 +29,7 @@ function App() {
       username: string,
       constraints: MediaStreamConstraints
    ) => {
-      if(localStream) localStream.getTracks().forEach((track) => track.stop())
+      if (localStream) localStream.getTracks().forEach((track) => track.stop())
 
       getMediaStream(constraints).then((stream) => {
          setLocalStream(stream)

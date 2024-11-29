@@ -116,7 +116,7 @@ function useRoomConnection({
          id,
       }: {
          caller: string
-         signal: any
+         signal: string
          id: string
       }) => {
          Connections.signalConnection(caller, id, signal)

@@ -38,7 +38,7 @@ const commands = [
    {
       command: '/quite',
       schema: '/quite [message] -- Send a quite message',
-   }
+   },
 ]
 
 const getCommandMessage = (message: string) => {
