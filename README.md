@@ -1,7 +1,8 @@
-<p align="center">
-  <h1>Meets Clone</h1> 
-  <img src="./docs/logo.gif" width="50">
-</p>
+# Meets Clone
+<p align="center" width="100%">
+    <img  src="./docs/logo.gif" width="100px">
+</p> 
+  
 
 ## Description
 
