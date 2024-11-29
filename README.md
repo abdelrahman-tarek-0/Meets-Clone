@@ -1,5 +1,5 @@
 <h1 style="display: flex; align-items: center; justify-content: center;">
-  <span>Meets Clone</span> <img style="float: top;" src="./docs/logo.gif" width="50">
+  <span>Meets Clone</span> <img  src="./docs/logo.gif" width="50">
 </h1>
 
 ## Description
