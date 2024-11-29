@@ -14,7 +14,7 @@ using WebRTC for video and audio chat, and Socket.io for text chat and Signaling
 [Meets Clone Demo
 ](https://meets-clone.onrender.com/)
 
-<center><img src="./docs/image.png"></img></center>
+<img src="./docs/image.png"></img>
 
 ## Features
 
