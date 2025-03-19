@@ -70,8 +70,11 @@ export default function Room({
    const [message, setMessage] = useState<string | null | undefined>(null)
    const [tooltipOpen, setTooltipOpen] = useState(false)
    const [selectedCommand, setSelectedCommand] = useState<string | null>(null)
-
    const inputRef = useRef<HTMLInputElement>(null)
+
+   const newUrl = new URL(window.location.href);
+   newUrl.searchParams.set('roomID', roomID);
+   window.history.pushState({}, '', newUrl);
 
    const handelSendMessage = () => {
       if (!message || !socket) return

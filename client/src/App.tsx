@@ -13,7 +13,11 @@ import { getMediaStream } from '@/lib/utils'
 import RoomsTable from '@/components/RoomsTable'
 
 function App() {
-   const [roomID, setRoomID] = useLocalStorage('last-room-id', '')
+   const params = new URLSearchParams(window.location.search)
+   const rmID = params.get('roomID')
+
+   const [roomID, setRoomID] = useState(rmID || '')
+
    const [name, setName] = useLocalStorage('client-name', '')
    const [currentPage, setCurrentPage] = useState('login')
 
@@ -34,8 +38,12 @@ function App() {
       getMediaStream(constraints).then((stream) => {
          setLocalStream(stream)
          setName(username)
-         setCurrentPage('roomsTable')
          setConnectSocket(true)
+         if (roomID) {
+            setCurrentPage('room')
+         } else {
+            setCurrentPage('roomsTable')
+         }
       })
    }
 

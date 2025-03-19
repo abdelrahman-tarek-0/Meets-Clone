@@ -75,6 +75,10 @@ export default function RoomsTable({
    const [refresh, setRefresh] = useState(0)
    const [loading, setLoading] = useState(false)
 
+   const newUrl = new URL(window.location.href);
+   newUrl.searchParams.delete('roomID');
+   window.history.pushState({}, '', newUrl);
+
    const refreshRooms = () => {
       setRefresh((prev) => prev + 1)
    }
