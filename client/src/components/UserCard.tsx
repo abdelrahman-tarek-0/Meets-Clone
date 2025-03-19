@@ -47,7 +47,7 @@ export default function UserCard({
    const mediaRef = useRef<HTMLVideoElement>(null)
    const [muteAudio, setMuteAudio] = useState(false)
    const [muteVideo, setMuteVideo] = useState(false)
-   const [volume, setVolume] = useLocalStorage(`${name}-volume`,1)
+   const [volume, setVolume] = useLocalStorage(`${name}-volume`, 1)
    const [isAdjustMicOpen, setIsAdjustMicOpen] = useState(false)
 
    const [micColor, setMicColor] = useState('white')
@@ -187,7 +187,8 @@ export default function UserCard({
                         autoPlay
                         playsInline
                         muted={isMe}
-                        className="mt-2 rounded-lg shadow-lg w-[300px]"
+                        className="mt-2 rounded-lg shadow-lg"
+                        style={hasVideoTracks() ? {} : { display: 'none' }}
                      />
                   ) : (
                      <Badge variant="destructive">No Stream</Badge>
@@ -255,7 +256,9 @@ export default function UserCard({
                      </div>
                      <div
                         className="flex items-center justify-center w-full mt-4"
-                        style={isAdjustMicOpen && !isMe ? {} : { display: 'none' }}
+                        style={
+                           isAdjustMicOpen && !isMe ? {} : { display: 'none' }
+                        }
                      >
                         <Slider
                            className={'w-[100%] mr-1 cursor-pointer'}
