@@ -11,8 +11,10 @@ import {
 import { Badge } from '@/components/ui/badge'
 
 import { Mic, MicOff, Camera, CameraOff } from 'lucide-react'
-import { Checkbox } from '@/components/ui/checkbox'
 import { monitorAudioActivity } from '@/lib/utils'
+import { Slider } from '@/components/ui/slider'
+
+import useLocalStorage from 'use-local-storage'
 
 type UserCardProps = {
    id: string
@@ -45,11 +47,26 @@ export default function UserCard({
    const mediaRef = useRef<HTMLVideoElement>(null)
    const [muteAudio, setMuteAudio] = useState(false)
    const [muteVideo, setMuteVideo] = useState(false)
+   const [volume, setVolume] = useLocalStorage(`${name}-volume`,1)
+   const [isAdjustMicOpen, setIsAdjustMicOpen] = useState(false)
 
    const [micColor, setMicColor] = useState('white')
 
    const hasAudioTracks = () => stream && stream?.getAudioTracks()?.length > 0
    const hasVideoTracks = () => stream && stream?.getVideoTracks()?.length > 0
+
+   const handelVolumeChange = (num: number) => {
+      console.log('Volume', num)
+      setVolume(Number(num))
+
+      if (mediaRef.current && stream) {
+         mediaRef.current.volume = Number(num)
+      }
+   }
+
+   useEffect(() => {
+      console.log('Volume', volume)
+   }, [volume])
 
    useEffect(() => {
       if (mediaRef.current && stream) {
@@ -178,62 +195,83 @@ export default function UserCard({
                </div>
             </CardContent>
             <CardFooter>
-               <div className="flex flex-col items-center justify-between">
+               <div className="flex flex-col items-center justify-between w-full">
                   <CardDescription>
-                     {
-                        <div className="flex items-center space-x-2">
-                           <label
-                              htmlFor={`${id}-audio`}
-                              className="cursor-pointer"
-                           >
-                              {!stream || muteAudio ? (
-                                 <MicOff />
-                              ) : (
-                                 <Mic color={micColor} />
-                              )}
-                           </label>
-                           <Checkbox
-                              checked={muteAudio || !hasAudioTracks()}
-                              style={{
-                                 visibility: 'hidden',
-                              }}
-                              id={`${id}-audio`}
-                              onCheckedChange={(e) => {
-                                 setMuteAudio(e.valueOf() as boolean)
-                              }}
-                           />
-                           <label
-                              htmlFor={`${id}-video`}
-                              className="cursor-pointer"
-                           >
-                              {!stream || muteVideo ? (
-                                 <CameraOff />
-                              ) : (
-                                 <Camera />
-                              )}
-                           </label>
-                           <Checkbox
-                              checked={muteVideo || !hasVideoTracks()}
-                              style={{
-                                 visibility: 'hidden',
-                              }}
-                              id={`${id}-video`}
-                              onCheckedChange={(e) => {
-                                 setMuteVideo(e.valueOf() as boolean)
-                              }}
-                           />
+                     <div className="flex items-center space-x-2 w-full">
+                        <label
+                           htmlFor={`${id}-audio`}
+                           className="cursor-pointer"
+                        >
+                           <div className="flex items-center justify-between"></div>
+                           {!stream || muteAudio ? (
+                              <MicOff
+                                 onClick={() => {
+                                    setMuteAudio(!muteAudio)
+                                 }}
+                                 onMouseEnter={() =>
+                                    setIsAdjustMicOpen(!isAdjustMicOpen)
+                                 }
+                              />
+                           ) : (
+                              <Mic
+                                 color={micColor}
+                                 onClick={() => {
+                                    setMuteAudio(!muteAudio)
+                                 }}
+                                 onMouseEnter={() =>
+                                    setIsAdjustMicOpen(!isAdjustMicOpen)
+                                 }
+                              />
+                           )}
+                        </label>
 
-                           {isMe && <Badge variant="secondary">You</Badge>}
-                           {!isMe &&
-                              (isConnected ? (
-                                 <Badge>Connected</Badge>
-                              ) : (
-                                 <Badge variant="destructive">
-                                    Not Connected
-                                 </Badge>
-                              ))}
-                        </div>
-                     }
+                        <label
+                           htmlFor={`${id}-video`}
+                           className="cursor-pointer"
+                        >
+                           {!stream || muteVideo ? (
+                              <CameraOff
+                                 onClick={() => {
+                                    setMuteVideo(!muteVideo)
+                                 }}
+                              />
+                           ) : (
+                              <Camera
+                                 onClick={() => {
+                                    setMuteVideo(!muteVideo)
+                                 }}
+                              />
+                           )}
+                        </label>
+
+                        {isMe && <Badge variant="secondary">You</Badge>}
+
+                        {!isMe &&
+                           (isConnected ? (
+                              <Badge>Connected</Badge>
+                           ) : (
+                              <Badge variant="destructive">Not Connected</Badge>
+                           ))}
+                     </div>
+                     <div
+                        className="flex items-center justify-center w-full mt-4"
+                        style={isAdjustMicOpen && !isMe ? {} : { display: 'none' }}
+                     >
+                        <Slider
+                           className={'w-[100%] mr-1 cursor-pointer'}
+                           defaultValue={[volume]}
+                           min={0}
+                           max={1}
+                           step={0.01}
+                           onValueChange={(e) => {
+                              handelVolumeChange(e?.[0] ?? 1)
+                           }}
+                           onValueCommit={() => {
+                              setIsAdjustMicOpen(false)
+                           }}
+                        />
+                        <span>{(volume * 100).toFixed(0)}%</span>
+                     </div>
                   </CardDescription>
                </div>
             </CardFooter>
