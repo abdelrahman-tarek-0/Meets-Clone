@@ -63,10 +63,12 @@ export default function UserCard({
          mediaRef.current.volume = Number(num)
       }
    }
-
    useEffect(() => {
-      console.log('Volume', volume)
-   }, [volume])
+      if(mediaRef.current){
+         mediaRef.current.volume = volume
+      }
+   }, [mediaRef.current])
+
 
    useEffect(() => {
       if (mediaRef.current && stream) {
